@@ -7,25 +7,6 @@ var SpecialsTest = function(config, accessToken) {
     logger = testUtil.getLogger('Specials-Test');
 
   return {
-    getConfiguration : function() {
-      var test = 'Foursquare.Specials.getConfiguration(\'4c06d48086ba62b5f05988b3\')';
-      Foursquare.Specials.getConfiguration('4c06d48086ba62b5f05988b3', accessToken, function (error, data) {
-        if(error) {
-          testUtil.reportError(logger, test, error.message);
-        }
-        else {
-          try {
-            testUtil.reportData(logger, test, util.inspect(data));
-            assert.ok(data.special);
-            assert.ok(data.special.id == '4c06d48086ba62b5f05988b3');
-            testUtil.reportOk(logger, test);
-          } catch (error) {
-            testUtil.reportError(logger, test, error);
-          }
-        }
-      });
-    },
-
     getSpecial : function() {
       var test = 'Foursquare.Specials.getSpecial(\'4c06d48086ba62b5f05988b3\', \'4e0deab3922e6f94b1410af3\')';
       Foursquare.Specials.getSpecial('4c06d48086ba62b5f05988b3', '4e0deab3922e6f94b1410af3', {}, accessToken, function (error, data) {

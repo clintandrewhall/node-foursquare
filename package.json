@@ -1,16 +1,18 @@
 {
   "name": "node-foursquare",
-  "description": "Fault-tolerant Foursquare API v2 wrapper for Node JS.",
-  "version": "0.2.1",
+  "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
+  "version": "0.3",
   "main": "index.js",
   "keywords": [
     "node-foursquare",
     "foursquare",
+    "swarm",
     "4sq"
   ],
   "tags": [
     "node-foursquare",
     "foursquare",
+    "swarm",
     "4sq"
   ],
   "repository": {

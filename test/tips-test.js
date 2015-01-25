@@ -84,23 +84,6 @@ var TipsTest = function(config, accessToken) {
           }
         }
       });
-    },
-    search : function() {
-      var test = 'Foursquare.Tips.search(40.7, -74)';
-      Foursquare.Tips.search('40.7', '-74', {}, accessToken, function (error, data) {
-        if(error) {
-          testUtil.reportError(logger, test, error.message);
-        }
-        else {
-          try {
-            testUtil.reportData(logger, test, util.inspect(data));
-            assert.ok(data.tips);
-            testUtil.reportOk(logger, test);
-          } catch (error) {
-            testUtil.reportError(logger, test, error);
-          }
-        }
-      });
     }
   }
 };

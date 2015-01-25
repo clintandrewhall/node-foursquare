@@ -7,24 +7,6 @@ var UsersTests = function(config, accessToken) {
     logger = testUtil.getLogger('Users-Test');
 
   return {
-    getBadges : function() {
-      var test = 'Foursquare.Users.getBadges(self)';
-      Foursquare.Users.getBadges(null, accessToken, function (error, data) {
-        if(error) {
-          testUtil.reportError(logger, test, error.message);
-        }
-        else {
-          try {
-            testUtil.reportData(logger, test, util.inspect(data));
-            assert.ok(logger, data.badges);
-            testUtil.reportOk(logger, test);
-          } catch (error) {
-            testUtil.reportError(logger, test, error);
-          }
-        }
-      });
-    },
-
     getCheckins : function() {
       var test = 'Foursquare.Users.getCheckins(self)';
       Foursquare.Users.getCheckins(null, null, accessToken, function (error, data) {
@@ -57,26 +39,6 @@ var UsersTests = function(config, accessToken) {
             assert.ok(logger, data.friends);
             assert.ok(logger, data.friends.count >= 0);
             assert.ok(logger, data.friends.items);
-            testUtil.reportOk(logger, test);
-          } catch (error) {
-            testUtil.reportError(logger, test, error);
-          }
-        }
-      });
-    },
-
-    getLeaderboard : function() {
-      var test = 'Foursquare.Users.getLeaderboard()';
-      Foursquare.Users.getLeaderboard({}, accessToken, function (error, data) {
-        if(error) {
-          testUtil.reportError(logger, test, error.message);
-        }
-        else {
-          try {
-            testUtil.reportData(logger, test, util.inspect(data));
-            assert.ok(logger, data.leaderboard);
-            assert.ok(logger, data.leaderboard.count >= 0);
-            assert.ok(logger, data.leaderboard.items);
             testUtil.reportOk(logger, test);
           } catch (error) {
             testUtil.reportError(logger, test, error);
@@ -175,26 +137,6 @@ var UsersTests = function(config, accessToken) {
             assert.ok(logger, data.tips);
             assert.ok(logger, data.tips.count >= 0);
             assert.ok(logger, data.tips.items);
-            testUtil.reportOk(logger, test);
-          } catch (error) {
-            testUtil.reportError(logger, test, error);
-          }
-        }
-      });
-    },
-
-    getTodos : function() {
-      var test = 'Foursquare.Users.getTodos(self)';
-      Foursquare.Users.getTodos(null, null, accessToken, function (error, data) {
-        if(error) {
-          testUtil.reportError(logger, test, error.message);
-        }
-        else {
-          try {
-            testUtil.reportData(logger, test, util.inspect(data));
-            assert.ok(logger, data.todos);
-            assert.ok(logger, data.todos.count >= 0);
-            assert.ok(logger, data.todos.items);
             testUtil.reportOk(logger, test);
           } catch (error) {
             testUtil.reportError(logger, test, error);
