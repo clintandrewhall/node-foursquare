@@ -9,15 +9,15 @@ var util = require('util'),
 function TestSuite(accessToken) {
   var Tests = {
     'Checkins' : require('./checkins-test')(config, accessToken),
-    'Events' : require('./events-test')(config, accessToken),
-    'Lists' : require('./lists-test')(config, accessToken),
-    'Photos' : require('./photos-test')(config, accessToken),
-    'Settings' : require('./settings-test')(config, accessToken),
-    'Specials' : require('./specials-test')(config, accessToken),
-    'Tips' : require('./tips-test')(config, accessToken),
-    'Updates' : require('./updates-test')(config, accessToken),
-    'Users' : require('./users-test')(config, accessToken),
-    'Venues' : require('./venues-test')(config, accessToken)
+    // 'Events' : require('./events-test')(config, accessToken),
+    // 'Lists' : require('./lists-test')(config, accessToken),
+    // 'Photos' : require('./photos-test')(config, accessToken),
+    // 'Settings' : require('./settings-test')(config, accessToken),
+    // 'Specials' : require('./specials-test')(config, accessToken),
+    // 'Tips' : require('./tips-test')(config, accessToken),
+    // 'Updates' : require('./updates-test')(config, accessToken),
+    // 'Users' : require('./users-test')(config, accessToken),
+    // 'Venues' : require('./venues-test')(config, accessToken)
   };
 
   return {
