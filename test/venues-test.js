@@ -262,6 +262,24 @@ var VenuesTest = function(config, accessToken) {
         }
       });
     },
+    
+    getSuggestcompletionWithNear : function() {
+      var test = 'Foursquare.Venues.getSuggestcompletion(null, null, \'foursqu\')';
+      Foursquare.Venues.getSuggestcompletion(null, null, 'Baking', { near: 'Chicago' }, accessToken, function (error, data) {
+        if(error) {
+          testUtil.reportError(logger, test, error.message);
+        }
+        else {
+          try {
+            testUtil.reportData(logger, test, util.inspect(data));
+            assert.ok(data.minivenues);
+            testUtil.reportOk(logger, test);
+          } catch (error) {
+            testUtil.reportError(logger, test, error);
+          }
+        }
+      });
+    },
 
     getTimeseries : function() {
       testUtil.reportError(
@@ -338,6 +356,25 @@ var VenuesTest = function(config, accessToken) {
           try {
             testUtil.reportData(logger, test, util.inspect(data));
             assert.ok(data.venues);
+            testUtil.reportOk(logger, test);
+          } catch (error) {
+            testUtil.reportError(logger, test, error);
+          }
+        }
+      });
+    },
+    
+    searchGlobal : function() {
+      var test = 'Foursquare.Venues.search(null, null)';
+      Foursquare.Venues.search(null, null, null, { intent: 'global', query: 'Baking', limit: 1 }, accessToken, function (error, data) {
+        if(error) {
+          testUtil.reportError(logger, test, error);
+        }
+        else {
+          try {
+            testUtil.reportData(logger, test, util.inspect(data));
+            assert.ok(data.venues);
+            assert.ok(data.venues.length === 1);
             testUtil.reportOk(logger, test);
           } catch (error) {
             testUtil.reportError(logger, test, error);
