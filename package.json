@@ -24,10 +24,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "winston": "2.4.x"
+    "winston": "^2.4.0"
   },
   "devDependencies": {
-    "express": "2.5.x"
+    "express": "^4.16.2"
   },
   "engines": {
     "node": ">= 0.8.x"

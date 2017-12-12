@@ -77,7 +77,7 @@ var TipsTest = function(config, accessToken) {
           try {
             testUtil.reportData(logger, test, util.inspect(data));
             assert.ok(data.tip);
-            assert.equal(data.tip.id, '4b5e662a70c603bba7d790b4');
+            assert.equal(data.tip.id, '4e5b969ab61c4aaa3e183989');
             testUtil.reportOk(logger, test);
           } catch (error) {
             testUtil.reportError(logger, test, error);
