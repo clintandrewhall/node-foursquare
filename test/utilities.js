@@ -5,16 +5,16 @@ var winston = require('winston'),
 
 function getLoggerSettings(name) {
   return {
-    'console': {
-      'colorize': 'true',
-      'level': 'warn',
-      'label' : name
-    }
-  }
+    console: {
+      colorize: 'true',
+      level: 'info',
+      label: name,
+    },
+  };
 }
 
 function reportData(logger, test, data) {
-  logger.info(test + ' : ' + data);
+  logger.debug(test + ' : ' + data);
 }
 
 function reportError(logger, test, message) {
@@ -22,7 +22,7 @@ function reportError(logger, test, message) {
 }
 
 function reportOk(logger, test) {
-  logger.debug(test + ' : \033[22;32mOK\x1B[0m');
+  logger.info(test + ' : \033[22;32mOK\x1B[0m');
 }
 
 function getLogger(name) {

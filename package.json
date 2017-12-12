@@ -29,7 +29,7 @@
     }
   ],
   "dependencies": {
-    "winston": "0.8.x"
+    "winston": "2.4.x"
   },
   "devDependencies": {
     "express": "2.5.x"

@@ -68,8 +68,8 @@ var TipsTest = function(config, accessToken) {
     },
 
     getTip : function() {
-      var test = 'Foursquare.Tips.getTip(4b5e662a70c603bba7d790b4)';
-      Foursquare.Tips.getTip('4b5e662a70c603bba7d790b4', accessToken, function (error, data) {
+      var test = 'Foursquare.Tips.getTip(4e5b969ab61c4aaa3e183989)';
+      Foursquare.Tips.getTip('4e5b969ab61c4aaa3e183989', accessToken, function (error, data) {
         if(error) {
           testUtil.reportError(logger, test, error.message);
         }
