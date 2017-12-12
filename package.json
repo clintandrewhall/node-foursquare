@@ -22,12 +22,7 @@
   "bugs": {
     "url": "https://github.com/clintandrewhall/node-foursquare/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://github.com/clintandrewhall/node-foursquare/raw/master/LICENSE"
-    }
-  ],
+  "license": "MIT",
   "dependencies": {
     "winston": "2.4.x"
   },
