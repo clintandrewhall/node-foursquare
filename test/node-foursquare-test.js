@@ -40,7 +40,7 @@ function TestSuite(accessToken) {
 }
 
 // Using express was just faster... *sigh*
-var app = express.createServer();
+var app = express();
 
 app.get('/', function(req, res) {
   var url = Foursquare.getAuthClientRedirectUrl(config.clientId, config.redirectUrl);
