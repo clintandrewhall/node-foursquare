@@ -27,7 +27,7 @@
     "winston": "^2.4.0"
   },
   "devDependencies": {
-    "express": "4.16.x"
+    "express": "^4.16.2"
   },
   "engines": {
     "node": ">= 0.8.x"
