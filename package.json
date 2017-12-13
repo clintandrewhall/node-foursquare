@@ -3,18 +3,8 @@
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
   "version": "0.3.2",
   "main": "index.js",
-  "keywords": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
-  "tags": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
+  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -27,10 +17,21 @@
     "winston": "^2.4.0"
   },
   "devDependencies": {
-    "express": "^4.16.2"
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.0.3",
+    "babel-preset-flow": "^6.23.0",
+    "eslint": "^4.13.1",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-flowtype": "^2.40.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-prettier": "^2.3.1",
+    "express": "^4.16.2",
+    "flow-bin": "^0.61.0",
+    "prettier": "^1.9.2"
   },
   "engines": {
-    "node": ">= 0.8.x"
+    "node": ">= 8.2.1"
   },
   "homepage": "https://github.com/clintandrewhall/node-foursquare",
   "author": "Clint Andrew Hall (http://www.clintandrewhall.com)",
@@ -39,6 +40,9 @@
     "doc": "./doc"
   },
   "scripts": {
-    "test": "node test.js"
+    "build": "babel src/ -d dist/",
+    "flow": "flow",
+    "test": "node test.js",
+    "prepublish": "npm run build"
   }
 }
