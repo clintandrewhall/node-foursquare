@@ -1,160 +1,222 @@
+/* @flow */
+
+import type {FoursquareConfig} from './config-default';
+import type {CallbackFunction} from './util/callbacks';
+import type {LocationParameter} from './util/locations';
+
+const coreModule = require('./core');
+const locations = require('./util/locations');
+
+const emptyCallback = () => {};
+const path = require('path');
+
 /**
  * A module for retrieving information about Checkins from Foursquare.
- * @param {Object} config A valid configuration.
  * @module node-foursquare/Checkins
  */
-module.exports = function(config) {
-  var core = require('./core')(config),
-      path = require('path'),
-      logger = core.getLogger('checkins');
+module.exports = (config: FoursquareConfig) => {
+  const core = coreModule(config);
+  const logger = core.getLogger('checkins');
+  const module = 'Checkins';
 
-  /**
-   * Retrieve a Foursquare Check-in.
-   * @memberof module:node-foursquare/Checkins
-   * @param {String} checkinId The id of the check-in.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/checkins/checkins
-   */
-  function getCheckin(checkinId, params, accessToken, callback) {
-    logger.enter('getCheckin');
+  function addPostToCheckin(
+    checkinId: string,
+    params: ?{
+      text?: string,
+      url?: URL,
+      contentId?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction,
+  ) {
+    const method = 'addPostToCheckin';
+    logger.enter(method);
 
-    if(!checkinId) {
-      logger.error('getCheckin: checkinId is required.');
-      callback(new Error('Checkins.getCheckin: checkinId is required.'));
+    if (!checkinId) {
+      logger.error(`${method}: checkinId is required.`);
+      callback(new Error(`${module}.${method}: checkinId is required.`));
       return;
     }
 
-    core.callApi(path.join('/checkins', checkinId), accessToken, params || {}, callback);
+    core.postApi(
+      path.join('/checkins', checkinId, 'addpost'),
+      accessToken,
+      params,
+      callback,
+    );
   }
 
-  /**
-   * Add a Foursquare Check-in.
-   * @memberof module:node-foursquare/Checkins
-   * @param {String} venueId The id of the venue to check-in to.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/checkins/add
-   */
-  function addCheckin(venueId, params, accessToken, callback) {
-    logger.enter('addCheckin');
+  function createCheckin(
+    venueId: string,
+    params: ?{
+      broadcast?: Array<'private' | 'public' | 'facebook' | 'twitter' | 'followers'>, // prettier-ignore
+      eventId?: string,
+      location?: LocationParameter,
+      mentions?: Array<string>,
+      shout?: string,
+    },
+    accessToken: string,
+    callback: CallbackFunction,
+  ) {
+    const method = 'createCheckin';
+    logger.enter(method);
 
-    if(!venueId) {
-      logger.error('addCheckin: venueId is required.');
-      callback(new Error('Checkins.addCheckin: venueId is required.'));
+    if (!venueId) {
+      logger.error(`${method}: venueId is required.`);
+      callback(new Error(`${module}.${method}: venueId is required.`));
       return;
     }
 
-    params = params || {};
-    params.venueId = venueId;
+    const providedParams = params || {};
+    const {location, ...otherParams} = providedParams;
+    const locationParams = locations.getLocationAPIParameter(
+      params,
+      method,
+      module,
+      logger,
+      callback,
+    );
 
-    core.postApi('/checkins/add', accessToken, params, callback);
+    core.postApi(
+      '/checkins/add',
+      accessToken,
+      {
+        venueId,
+        ...locationParams,
+        ...otherParams,
+      },
+      callback,
+    );
   }
 
-  /**
-   * Retrieve the 'likes' for a Foursquare Check-in.
-   * @memberof module:node-foursquare/Checkins
-   * @param {String} checkinId The id of the check-in.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/checkins/checkins/likes
-   */
-  function getLikes(checkinId, accessToken, callback) {
-    logger.enter('getLikes');
+  function getCheckinDetails(
+    checkinId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction,
+  ) {
+    const method = 'getCheckinDetails';
+    logger.enter(method);
 
-    if(!checkinId) {
-      logger.error('getCheckin: checkinId is required.');
-      callback(new Error('Checkins.getCheckin: checkinId is required.'));
+    if (!checkinId) {
+      logger.error(`${method}: checkinId is required.`);
+      callback(new Error(`${module}.${method}: checkinId is required.`));
       return;
     }
 
-    core.callApi(path.join('/checkins', checkinId, 'likes'), accessToken, {}, callback);
+    core.callApi(
+      path.join('/checkins', checkinId),
+      accessToken,
+      params,
+      callback,
+    );
   }
 
-  /**
-   * Retreive recent checkins.
-   * @memberof module:node-foursquare/Checkins
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String|Number} [params.lat] The latitude of the location around which to search.
-   * @param {String|Number} [params.lng] The longitude of the location around which to search.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/checkins/recent
-   */
-  function getRecentCheckins(params, accessToken, callback) {
-    logger.enter('getRecentCheckins');
-    core.callApi('/checkins/recent', accessToken, params || {}, callback);
+  function getRecentCheckins(
+    params: ?{
+      afterTimestamp?: number,
+      limit?: number,
+      location?: LocationParameter,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = emptyCallback,
+  ) {
+    const method = 'getRecentCheckins';
+    logger.enter(method);
+    const providedParams = params || {};
+    const {location, ...otherParams} = providedParams;
+    const locationParams = locations.getLocationAPIParameter(
+      params,
+      method,
+      module,
+      logger,
+      callback,
+    );
+
+    core.callApi(
+      '/checkins/recent',
+      accessToken,
+      {
+        ...locationParams,
+        ...otherParams,
+      },
+      callback,
+    );
   }
 
-  /**
-   * Comment on a checkin-in
-   * @memberof module:node-foursquare/Checkins
-   * @param {String} checkinId The id of the check-in.
-   * @param {String} text The text of the comment, up to 200 characters.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/checkins/addcomment
-   */
-  function addCommentToCheckin(checkinId, text, params, accessToken, callback) {
-    logger.enter('addCommentToCheckin');
+  function likeCheckin(
+    checkinId: string,
+    // eslint-disable-next-line
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction,
+  ) {
+    const method = 'likeCheckin';
+    logger.enter(method);
 
-    if(!checkinId) {
-      logger.error('addCommentToCheckin: checkinId is required.');
-      callback(new Error('Checkins.addCommentToCheckin: checkinId is required.'));
+    if (!checkinId) {
+      logger.error(`${method}: checkinId is required.`);
+      callback(new Error(`${module}.${method}: checkinId is required.`));
       return;
     }
 
-    params = params || {};
-    params.text = text;
-
-    core.postApi(path.join('/checkins', checkinId, 'addcomment'), accessToken, params, callback);
+    core.postApi(
+      path.join('/checkins', checkinId, 'like'),
+      accessToken,
+      {set: 1},
+      callback,
+    );
   }
 
-  /**
-   * Remove a comment from a checkin, if the acting user is the author or the owner of the checkin.
-   * @memberof module:node-foursquare/Checkins
-   * @param {String} checkinId The id of the check-in.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} commentId The id of the comment to remove.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/checkins/deletecomment
-   */
-  function deleteCommentFromCheckin(checkinId, commentId, params, accessToken, callback) {
-    logger.enter('deleteCommentFromCheckin');
+  function resolveCheckin(
+    shortId: string,
+    // eslint-disable-next-line
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction,
+  ) {
+    const method = 'likeCheckin';
+    logger.enter(method);
 
-    if(!checkinId) {
-      logger.error('deleteCommentFromCheckin: checkinId is required.');
-      callback(new Error('Checkins.deleteCommentFromCheckin: checkinId is required.'));
+    if (!shortId) {
+      logger.error(`${method}: shortId is required.`);
+      callback(new Error(`${module}.${method}: shortId is required.`));
       return;
     }
 
-    if (!commentId) {
-      logger.error('deleteCommentFromCheckin: commentId is required.');
-      callback(new Error('Checkins.deleteCommentFromCheckin: commentId is required.'));
+    core.postApi('/checkins/resolve', accessToken, {shortId}, callback);
+  }
+
+  function unlikeCheckin(
+    checkinId: string,
+    params: ?{} = {}, // eslint-disable-line
+    accessToken: string,
+    callback: CallbackFunction,
+  ) {
+    const method = 'unlikeCheckin';
+    logger.enter(method);
+
+    if (!checkinId) {
+      logger.error(`${method}: checkinId is required.`);
+      callback(new Error(`${module}.${method}: checkinId is required.`));
       return;
     }
 
-    params = params || {};
-    params.commentId = commentId;
-
-    core.postApi(path.join('/checkins', checkinId, 'deletecomment'), accessToken, params, callback);
+    core.postApi(
+      path.join('/checkins', checkinId, 'like'),
+      accessToken,
+      {set: 0},
+      callback,
+    );
   }
 
   return {
-    'addCommentToCheckin': addCommentToCheckin,
-    'deleteCommentFromCheckin': deleteCommentFromCheckin,
-    'addCheckin' : addCheckin,
-    'getCheckin' : getCheckin,
-    'getLikes' : getLikes,
-    'getRecentCheckins' : getRecentCheckins
-  }
+    addPostToCheckin,
+    createCheckin,
+    getCheckinDetails,
+    getRecentCheckins,
+    likeCheckin,
+    resolveCheckin,
+    unlikeCheckin,
+  };
 };

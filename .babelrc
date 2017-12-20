@@ -1,4 +1,18 @@
 {
-  "presets": ["flow"]
+  "comments": false,
+  "plugins": [
+    "transform-object-rest-spread",
+    "transform-merge-sibling-variables"
+  ],
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "4"
+        }
+      }
+    ],
+    "flow"
+  ]
 }
-

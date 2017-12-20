@@ -1,14 +1,31 @@
-var winston = require('winston');
+/* @flow */
 
-module.exports = {
+const winston = require('winston');
+
+export type FoursquareConfig = {
+  foursquare: {
+    accessTokenUrl: string,
+    authenticateUrl: string,
+    apiUrl: string,
+    version?: string,
+    warnings?: 'WARN' | 'ERROR',
+  },
+  winston: {
+    colors?: {[string]: string},
+    levels?: {[string]: number},
+    loggers?: any,
+    transports?: Array<any>,
+  },
+};
+
+const defaultConfig: FoursquareConfig = {
   foursquare: {
     accessTokenUrl: 'https://foursquare.com/oauth2/access_token',
     authenticateUrl: 'https://foursquare.com/oauth2/authenticate',
     apiUrl: 'https://api.foursquare.com/v2',
     /*
       This field will indicate which version of the Foursquare API you wish to
-      call. If not specified it will use the minimum date for the
-      Foursquare/Swarm migration.
+      call. If not specified it will use the last publish date of this library.
      */
     // 'version' : '20140806',
     /*
@@ -58,3 +75,5 @@ module.exports = {
   },
   secrets: {},
 };
+
+module.exports = defaultConfig;

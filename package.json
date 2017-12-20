@@ -1,10 +1,20 @@
 {
   "name": "node-foursquare",
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "main": "index.js",
-  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
-  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "keywords": [
+    "node-foursquare",
+    "foursquare",
+    "swarm",
+    "4sq"
+  ],
+  "tags": [
+    "node-foursquare",
+    "foursquare",
+    "swarm",
+    "4sq"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -14,24 +24,32 @@
   },
   "license": "MIT",
   "dependencies": {
+    "babel-plugin-remove-comments": "^2.0.0",
     "winston": "^2.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.0.3",
+    "babel-plugin-transform-merge-sibling-variables": "^6.8.6",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
     "eslint": "^4.13.1",
+    "eslint-config-airbnb": "^16.1.0",
     "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-babel": "^4.1.2",
     "eslint-plugin-flowtype": "^2.40.1",
     "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-prettier": "^2.3.1",
+    "eslint-plugin-react": "^7.5.1",
     "express": "^4.16.2",
     "flow-bin": "^0.61.0",
     "prettier": "^1.9.2"
   },
   "engines": {
-    "node": ">= 8.2.1"
+    "node": ">= 4.x"
   },
   "homepage": "https://github.com/clintandrewhall/node-foursquare",
   "author": "Clint Andrew Hall (http://www.clintandrewhall.com)",
@@ -40,9 +58,10 @@
     "doc": "./doc"
   },
   "scripts": {
-    "build": "babel src/ -d dist/",
+    "eslint": "eslint",
     "flow": "flow",
-    "test": "node test.js",
-    "prepublish": "npm run build"
+    "build": "babel src/ -d dist/",
+    "prepublish": "npm run build",
+    "test": "npm run build && node test.js"
   }
 }

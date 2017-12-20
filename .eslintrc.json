@@ -1,0 +1,21 @@
+{
+  "env": {
+    "node": true
+  },
+  "extends": [
+    "airbnb",
+    "prettier",
+    "prettier/flowtype",
+    "plugin:flowtype/recommended"
+  ],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "plugins": ["prettier", "flowtype", "babel"],
+  "rules": {
+    "strict": 0,
+    "prettier/prettier": ["error", "fb"],
+    "node/no-unsupported-features": 0
+  }
+}
