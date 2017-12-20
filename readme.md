@@ -1,38 +1,35 @@
-node-foursquare
-==================
+# node-foursquare
 
 Fault-tolerant Foursquare API wrapper for Node JS.
 
-
-Install
--------
+## Install
 
     npm install node-foursquare
 
-Version History
----------------
+## Version History
 
-*  v0.0.1 - First release
-*  v0.0.2 - Bug Fixes and Downstream Merges
-*  v0.1.0 - Suggested Refactoring and latest endpoints from Foursquare (VERY NON-PASSIVE)
-    * Surround results with field name.
-    * Userless Access Tokens (for Venues.explore, etc).
-    * Ability to load single portions of the library, (e.g. only import Venues).
-    * Users - Leaderboard, Requests
-    * Venues - Categories, Explore
-*  v0.1.1 - Support for Foursquare API Version + Deprecation Warnings (via configuration).
-*  v0.1.2 - Added new mayorships endpoint, removed extraneous field from User.getBadges (non-passive).
-*  v0.1.3 - Added Updates endpoint, updated to log4js v0.3.x.
-*  v0.1.4 - Added Lists and Events endpoints.
-*  v0.2.0 - Overhaul
-    * Replaced log4js with winston.
-    * Added new endpoints, modules, methods.
-    * Refactored testing suite.
-*  v0.2.1 - Unit test fixes and bugs/merges
-*  v0.3.0 - Remove deprecated Foursquare API endpoints, support new parameters.
+* v0.0.1 - First release
+* v0.0.2 - Bug Fixes and Downstream Merges
+* v0.1.0 - Suggested Refactoring and latest endpoints from Foursquare (VERY NON-PASSIVE)
+  * Surround results with field name.
+  * Userless Access Tokens (for Venues.explore, etc).
+  * Ability to load single portions of the library, (e.g. only import Venues).
+  * Users - Leaderboard, Requests
+  * Venues - Categories, Explore
+* v0.1.1 - Support for Foursquare API Version + Deprecation Warnings (via configuration).
+* v0.1.2 - Added new mayorships endpoint, removed extraneous field from User.getBadges (non-passive).
+* v0.1.3 - Added Updates endpoint, updated to log4js v0.3.x.
+* v0.1.4 - Added Lists and Events endpoints.
+* v0.2.0 - Overhaul
+  * Replaced log4js with winston.
+  * Added new endpoints, modules, methods.
+  * Refactored testing suite.
+* v0.2.1 - Unit test fixes and bugs/merges
+* v0.3.0 - Remove deprecated Foursquare API endpoints, support new parameters.
+* v0.3.2 - Latest updates and pull requests
+* v0.4.0 - (in progress) Refactor and update to latest API.
 
-Use
----
+## Use
 
 The Foursquare module takes a configuration parameter containing logging and
 client keys. It also supports alternate Foursquare URLs if necessary, (but that
@@ -49,7 +46,7 @@ is unlikely).
     var foursquare = require('node-foursquare')(config);
 
 Once instantiated, you just need to set up endpoints on your own server that
-match your OAuth configuration in Foursquare.  Using Express, for example:
+match your OAuth configuration in Foursquare. Using Express, for example:
 
     var app = express();
 
@@ -72,12 +69,11 @@ match your OAuth configuration in Foursquare.  Using Express, for example:
       });
     });
 
-Foursquare API Version and Deprecation Warnings
------------------------------------------------
+## Foursquare API Version and Deprecation Warnings
 
 Foursquare allows consumers to specify a 'version' of their API to invoke,
 based on the date that version became active. For example, passing a version
-string of '20110101' uses the API as of Jan 1, 2011.  By default, this library
+string of '20110101' uses the API as of Jan 1, 2011. By default, this library
 will use a version of '20140806', the minimum date for the Foursquare/Swarm
 migration.
 
@@ -93,10 +89,9 @@ To enable a different version of the API, add the following to configuration:
       ...
     }
 
-
 The Foursquare API now supports a 'mode' parameter, either 'foursquare' or
-'swarm'.  This parameter is now required.  By default, this library will assume
-'foursquare'.  You can change this through configuration:
+'swarm'. This parameter is now required. By default, this library will assume
+'foursquare'. You can change this through configuration:
 
     var config = {
       ...
@@ -107,7 +102,6 @@ The Foursquare API now supports a 'mode' parameter, either 'foursquare' or
       }
       ...
     }
-
 
 When using an older API, Foursquare will provide deprecation warnings, (if
 applicable). By default, this library will write these warnings to the log,
@@ -126,13 +120,11 @@ You can configure this library to throw an error instead:
       ...
     }
 
-
-Logging
--------
+## Logging
 
 This module uses winston to log events. By default, the logging level is set to
-'none'.  If you  want to output logging messages from the different modules of
-this library, you can add overrides to your configuration object.  For example,
+'none'. If you want to output logging messages from the different modules of
+this library, you can add overrides to your configuration object. For example,
 to log debug (and higher) messages in Venues and warnings in Core to the console:
 
     var config = {
@@ -158,8 +150,7 @@ For a list of existing logging points, refer to [config-default.js](https://gith
 
 For more information, see: https://github.com/flatiron/winston
 
-I18n
-----
+## I18n
 
 Add locale param to config:
 
@@ -171,8 +162,7 @@ Add locale param to config:
 
 Valid locales are listed in https://developer.foursquare.com/overview/versioning
 
-Testing
--------
+## Testing
 
 To test, you need to create a config.js file in the /test directory as follows:
 
@@ -199,8 +189,7 @@ Testing results will be logged to the console.
 
 All tests use examples as suggested by the [Foursquare Endpoint Explorer](https://developer.foursquare.com/docs/explore.html).
 
-Notes
------
+## Notes
 
 This module is a read-only subset of the full Foursquare API, but further
 capability, (adding, posting, updating, etc), is forthcoming. Bugs and Pull
