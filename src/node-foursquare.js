@@ -89,14 +89,17 @@ module.exports = (providedConfig: ?Object = {}) => {
    * @memberof module:node-foursquare
    */
   function getAccessToken(
-    providedParams: ?{
+    providedParams: {
+      code: string,
       grant_type?: ?string,
     },
     callback: CallbackFunction = empty,
   ) {
+    const {code} = providedParams;
     const params = {
+      code,
       grant_type:
-        (providedParams && providedParams.grant_type) || 'authorization_code',
+        providedParams.grant_type || 'authorization_code',
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uri: redirectUrl,

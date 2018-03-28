@@ -1,12 +1,16 @@
 /* @flow */
 
-import type {CallbackFunction, ServerCallbackFunction} from './util/callbacks';
+import type {
+  CallbackFunction,
+  ServerCallbackFunction,
+} from './util/callbacks';
+import type { FoursquareConfig } from './config-default';
 
 const qs = require('querystring');
 const util = require('util');
 const https = require('https');
 const urlParser = require('url');
-const winston = require('winston');
+const winstonLib = require('winston');
 
 const emptyCallback = () => {};
 
@@ -15,7 +19,7 @@ const emptyCallback = () => {};
  * @param {Object} config A valid configuration.
  */
 module.exports = (
-  config: Object,
+  config: FoursquareConfig
 ): {
   getLogger: Function,
   retrieve: Function,
@@ -24,41 +28,47 @@ module.exports = (
   callApi: Function,
   postApi: Function,
 } => {
-  const {loggers} = winston;
+  const winstonLoggers = winstonLib.loggers;
+  const { foursquare, secrets, winston } = config;
+  const { clientId, clientSecret } = secrets;
 
   function getLogger(name: string): any {
-    if (!loggers.has(name)) {
+    if (!winstonLoggers.has(name)) {
       // eslint-disable-next-line no-use-before-define
-      const logger = loggers.add(name, getLoggerSettings(name));
+      const logger = winstonLoggers.add(name, getLoggerSettings(name));
       logger.setLevels(config.winston.levels);
     }
-    return loggers.get(name);
+    return winstonLoggers.get(name);
   }
 
   const logger = getLogger('core');
 
   function getLoggerSettings(name: string): any {
-    let loggerTypes =
-      config.winston.loggers[name] || config.winston.loggers.default;
+    let { loggers } = winston;
 
-    if (!loggerTypes) {
+    if (!loggers) {
       logger.error(
         `No loggers exist for '${name}', nor is there a default. Update your
-        configuration.`,
+        configuration.`
       );
-
-      loggerTypes = {
-        console: {
-          level: 'warn',
-        },
-      };
+      loggers = {};
     }
+
+    const namedLogger = loggers[name];
+    const defaultLogger = loggers.default;
+
+    const loggerTypes = namedLogger ||
+      defaultLogger || {
+      console: {
+        level: 'warn',
+      },
+    };
 
     const keys = Object.keys(loggerTypes);
 
     keys.forEach(loggerType => {
-      loggers[loggerType].label = `node-foursquare:${name}`;
-      loggers[loggerType].colorize = true;
+      loggerTypes[loggerType].label = `node-foursquare:${name}`;
+      loggerTypes[loggerType].colorize = true;
     });
 
     return loggerTypes;
@@ -67,11 +77,11 @@ module.exports = (
   function retrieve(
     url: string,
     callback: ServerCallbackFunction = emptyCallback,
-    method: 'POST' | 'GET' = 'GET',
+    method: 'POST' | 'GET' = 'GET'
   ) {
     const parsedURL = urlParser.parse(url, true);
-    const {hostname, protocol} = parsedURL;
-    let {pathname, port, query} = parsedURL;
+    const { hostname, protocol } = parsedURL;
+    let { pathname, port, query } = parsedURL;
     let result = '';
     let request = null;
 
@@ -105,7 +115,7 @@ module.exports = (
         res.on('end', () => {
           callback(null, res.statusCode, result);
         });
-      },
+      }
     );
 
     request.on('error', error => {
@@ -120,15 +130,15 @@ module.exports = (
     url: string,
     accessToken: string,
     callback: ServerCallbackFunction = emptyCallback,
-    method: 'POST' | 'GET' = 'GET',
+    method: 'POST' | 'GET' = 'GET'
   ) {
     const parsedURL = urlParser.parse(url, true);
-    let {query} = parsedURL;
+    let { query } = parsedURL;
     query = query || {};
 
     if (!accessToken) {
-      query.client_id = config.secrets.clientId;
-      query.client_secret = config.secrets.clientSecret;
+      query.client_id = clientId;
+      query.client_secret = clientSecret;
     } else {
       query.oauth_token = accessToken;
     }
@@ -151,7 +161,7 @@ module.exports = (
           callback(null, status, result);
         }
       },
-      method,
+      method
     );
   }
 
@@ -159,14 +169,14 @@ module.exports = (
     url: string,
     status,
     result,
-    callback: CallbackFunction = emptyCallback,
+    callback: CallbackFunction = emptyCallback
   ) {
     let json = null;
 
     if (!status || !result) {
       logger.error(
         `There was an unexpected, fatal error calling Foursquare: the response
-        was undefined or had no status code.`,
+        was undefined or had no status code.`
       );
       callback(new Error('Foursquare had no response or status code.'));
       return;
@@ -179,7 +189,7 @@ module.exports = (
       return;
     }
 
-    const {meta, response} = json;
+    const { meta, response } = json;
 
     if (!meta) {
       logger.error(`Response had no metadata: ${util.inspect(json)}`);
@@ -187,7 +197,7 @@ module.exports = (
       return;
     }
 
-    const {code, errorDetail, errorType} = meta;
+    const { code, errorDetail, errorType } = meta;
 
     if (!code) {
       logger.error(`Response had no code: ${util.inspect(json)}`);
@@ -195,7 +205,7 @@ module.exports = (
       return;
     } else if (code !== 200) {
       logger.error(
-        `JSON Response had unexpected code: '${code}: ${errorDetail}'`,
+        `JSON Response had unexpected code: '${code}: ${errorDetail}'`
       );
 
       callback(new Error(`${code}: ${errorDetail}`));
@@ -203,12 +213,12 @@ module.exports = (
     }
 
     if (errorType) {
-      let {pathname} = urlParser.parse(url);
+      let { pathname } = urlParser.parse(url);
       pathname = pathname || '';
       const message = `${pathname} (${errorType}): ${errorDetail}`;
 
       logger.debug(
-        `extract: Warning level set to ${config.foursquare.warnings}`,
+        `extract: Warning level set to ${config.foursquare.warnings}`
       );
 
       if (config.foursquare.warnings === 'ERROR') {
@@ -228,10 +238,10 @@ module.exports = (
     accessToken: string,
     params: Object,
     callback: CallbackFunction = emptyCallback,
-    method: 'GET' | 'POST' = 'GET',
+    method: 'GET' | 'POST' = 'GET'
   ): void {
     let url = config.foursquare.apiUrl + path;
-    const queryParams = {...params};
+    const queryParams = { ...params };
 
     if (queryParams) {
       if (
@@ -241,8 +251,8 @@ module.exports = (
         callback(
           new Error(
             `callApi:parameters: if you specify a longitude or latitude, you
-            must include BOTH.`,
-          ),
+            must include BOTH.`
+          )
         );
         return;
       }
@@ -264,7 +274,7 @@ module.exports = (
       (error, status, result) => {
         extract(url, status, result, callback);
       },
-      method,
+      method
     );
   }
 

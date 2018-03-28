@@ -2,18 +2,30 @@
 
 const winston = require('winston');
 
+type WinstonLogger = {
+  label?: string,
+  level?: string,
+  colorize?: boolean,
+};
+
 export type FoursquareConfig = {
   foursquare: {
     accessTokenUrl: string,
     authenticateUrl: string,
     apiUrl: string,
+    mode?: 'swarm' | 'foursquare',
     version?: string,
     warnings?: 'WARN' | 'ERROR',
+  },
+  secrets: {
+    clientId: string,
+    clientSecret: string,
+    redirectUrl: string,
   },
   winston: {
     colors?: {[string]: string},
     levels?: {[string]: number},
-    loggers?: any,
+    loggers?: ?Object,
     transports?: Array<any>,
   },
 };

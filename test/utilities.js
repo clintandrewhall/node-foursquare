@@ -1,7 +1,4 @@
-
-var winston = require('winston'),
-    util = require('util');
-
+import winston from 'winston';
 
 function getLoggerSettings(name) {
   return {
@@ -14,15 +11,15 @@ function getLoggerSettings(name) {
 }
 
 function reportData(logger, test, data) {
-  logger.debug(test + ' : ' + data);
+  logger.debug(`${test} : ${data}`);
 }
 
 function reportError(logger, test, message) {
-  logger.error(test + ' :  \033[22;31mERROR: ' + message + '\x1B[0m');
+  logger.error(`${test} :  ERROR: ${message}`);
 }
 
 function reportOk(logger, test) {
-  logger.info(test + ' : \033[22;32mOK\x1B[0m');
+  logger.info(`${test} : OK`);
 }
 
 function getLogger(name) {
@@ -31,8 +28,8 @@ function getLogger(name) {
 }
 
 module.exports = {
-  getLogger : getLogger,
-  reportOk : reportOk,
-  reportData : reportData,
-  reportError : reportError
+  getLogger,
+  reportOk,
+  reportData,
+  reportError,
 };

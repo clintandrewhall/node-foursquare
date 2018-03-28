@@ -1,5 +1,6 @@
-test/config.js
+config.js
 node_modules
 nodemon-ignore
 .monitor
 .idea
+phantomjs.log
