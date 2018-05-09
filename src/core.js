@@ -175,7 +175,10 @@ module.exports = (
     try {
       json = JSON.parse(result);
     } catch (e) {
-      callback(status);
+      callback({
+        status,
+        error: e,
+      });
       return;
     }
 
@@ -183,7 +186,10 @@ module.exports = (
 
     if (!meta) {
       logger.error(`Response had no metadata: ${util.inspect(json)}`);
-      callback(new Error(`Response had no metadata: ${util.inspect(json)}`));
+      callback({
+        status,
+        error: new Error(`Response had no metadata: ${util.inspect(json)}`),
+      });
       return;
     }
 
@@ -191,14 +197,20 @@ module.exports = (
 
     if (!code) {
       logger.error(`Response had no code: ${util.inspect(json)}`);
-      callback(new Error(`Response had no code: ${util.inspect(json)}`));
+      callback({
+        status,
+        error: new Error(`Response had no code: ${util.inspect(json)}`),
+      });
       return;
     } else if (code !== 200) {
       logger.error(
         `JSON Response had unexpected code: '${code}: ${errorDetail}'`,
       );
 
-      callback(new Error(`${code}: ${errorDetail}`));
+      callback({
+        status,
+        error: new Error(`${code}: ${errorDetail}`),
+      });
       return;
     }
 
@@ -213,7 +225,10 @@ module.exports = (
 
       if (config.foursquare.warnings === 'ERROR') {
         logger.error(message);
-        callback(new Error(message));
+        callback({
+          status,
+          error: new Error(message),
+        });
         return;
       }
 
