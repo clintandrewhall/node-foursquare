@@ -175,7 +175,7 @@ module.exports = (
     try {
       json = JSON.parse(result);
     } catch (e) {
-      callback(e);
+      callback(status);
       return;
     }
 
