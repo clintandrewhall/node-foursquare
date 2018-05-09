@@ -4,3 +4,4 @@ nodemon-ignore
 .monitor
 .idea
 npm-debug.log
+.DS_Store
