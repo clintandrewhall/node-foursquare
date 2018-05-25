@@ -15,16 +15,17 @@ export type FoursquareConfig = {
     apiUrl: string,
     mode?: 'swarm' | 'foursquare',
     version?: string,
-    warnings?: 'WARN' | 'ERROR',
+    warnings: 'WARN' | 'ERROR',
   },
+  locale: string,
   secrets: {
     clientId: string,
     clientSecret: string,
     redirectUrl: string,
   },
   winston: {
-    colors?: {[string]: string},
-    levels?: {[string]: number},
+    colors?: { [string]: string },
+    levels?: { [string]: number },
     loggers?: ?Object,
     transports?: Array<any>,
   },
@@ -39,17 +40,23 @@ const defaultConfig: FoursquareConfig = {
       This field will indicate which version of the Foursquare API you wish to
       call. If not specified it will use the last publish date of this library.
      */
-    // 'version' : '20140806',
+    version: '20180516',
     /*
       This field determines how this library handles endpoints that return
       results along with an error, (e.g. deprecations).
         - If set to 'WARN' (default), log4js will write a warning to the log,
-          (NOTE: You must raise the 'node-foursquare.core' log4js level to WARN
+          (NOTE: You must raise the 'node-foursquare.core' level to WARN
           or lower in order to see these warnings.
         - If set to 'ERROR', the library will behave as though it encountered
           an ERROR and not return results.
      */
-    // 'warnings' : 'WARN'
+    warnings: 'WARN',
+  },
+  locale: 'en',
+  secrets: {
+    clientId: '',
+    clientSecret: '',
+    redirectUrl: '',
   },
   winston: {
     transports: [
@@ -69,23 +76,24 @@ const defaultConfig: FoursquareConfig = {
       error: 0,
     },
     colors: {
-      detail: 'grey',
-      trace: 'white',
       debug: 'blue',
+      detail: 'grey',
       enter: 'inverse',
-      info: 'green',
-      warn: 'yellow',
       error: 'red',
+      info: 'green',
+      trace: 'white',
+      warn: 'yellow',
     },
     loggers: {
       default: {
         console: {
+          colorize: true,
+          label: 'default',
           level: 'none',
         },
       },
     },
   },
-  secrets: {},
 };
 
 module.exports = defaultConfig;

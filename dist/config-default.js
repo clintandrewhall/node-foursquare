@@ -6,7 +6,17 @@ var defaultConfig = {
   foursquare: {
     accessTokenUrl: 'https://foursquare.com/oauth2/access_token',
     authenticateUrl: 'https://foursquare.com/oauth2/authenticate',
-    apiUrl: 'https://api.foursquare.com/v2'
+    apiUrl: 'https://api.foursquare.com/v2',
+
+    version: '20180516',
+
+    warnings: 'WARN'
+  },
+  locale: 'en',
+  secrets: {
+    clientId: '',
+    clientSecret: '',
+    redirectUrl: ''
   },
   winston: {
     transports: [new winston.transports.Console({
@@ -24,23 +34,24 @@ var defaultConfig = {
       error: 0
     },
     colors: {
-      detail: 'grey',
-      trace: 'white',
       debug: 'blue',
+      detail: 'grey',
       enter: 'inverse',
+      error: 'red',
       info: 'green',
-      warn: 'yellow',
-      error: 'red'
+      trace: 'white',
+      warn: 'yellow'
     },
     loggers: {
       default: {
         console: {
+          colorize: true,
+          label: 'default',
           level: 'none'
         }
       }
     }
-  },
-  secrets: {}
+  }
 };
 
 module.exports = defaultConfig;

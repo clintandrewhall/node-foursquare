@@ -1,10 +1,10 @@
 /* @flow */
 
-export type CallbackFunction = (error: ?Error, results?: any) => void;
+export type CallbackFunction = (error: ?Object, results?: any) => void;
 export type ServerCallbackFunction = (
   error: ?Error,
   statusCode?: number,
-  results?: any,
+  results?: any
 ) => void;
 
 module.exports = {

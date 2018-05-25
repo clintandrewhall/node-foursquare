@@ -60,6 +60,8 @@ module.exports = (
     const loggerTypes = namedLogger ||
       defaultLogger || {
       console: {
+        colorize: true,
+        label: 'default',
         level: 'warn',
       },
     };
