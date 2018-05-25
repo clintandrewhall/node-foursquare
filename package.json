@@ -3,18 +3,8 @@
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
   "version": "0.4.0",
   "main": "index.js",
-  "keywords": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
-  "tags": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
+  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -24,44 +14,54 @@
   },
   "license": "MIT",
   "dependencies": {
-    "babel-plugin-remove-comments": "^2.0.0",
+    "dotenv": "^5.0.1",
+    "npm": "^5.7.1",
     "winston": "^2.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.0.3",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.2",
+    "babel-jest": "^22.0.3",
+    "babel-plugin-remove-comments": "^2.0.0",
     "babel-plugin-transform-merge-sibling-variables": "^6.8.6",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
-    "eslint": "^4.13.1",
+    "casperjs": "^1.1.4",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-fbjs": "^2.0.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-plugin-babel": "^4.1.2",
-    "eslint-plugin-flowtype": "^2.40.1",
+    "eslint-plugin-flowtype": "^2.46.1",
     "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jest": "^21.5.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-prettier": "^2.3.1",
-    "eslint-plugin-react": "^7.5.1",
+    "eslint-plugin-react": "^7.7.0",
+    "eslint-plugin-relay": "^0.0.21",
     "express": "^4.16.2",
     "flow-bin": "^0.61.0",
-    "prettier": "^1.9.2"
+    "jest": "^22.0.3",
+    "phantomjs": "^2.1.7",
+    "prettier": "^1.9.2",
+    "regenerator-runtime": "^0.11.1"
   },
   "engines": {
-    "node": ">= 4.x"
+    "node": ">= 9.8.0"
   },
   "homepage": "https://github.com/clintandrewhall/node-foursquare",
   "author": "Clint Andrew Hall (http://www.clintandrewhall.com)",
-  "directories": {
-    "lib": "./lib",
-    "doc": "./doc"
-  },
   "scripts": {
     "eslint": "eslint",
     "flow": "flow",
     "build": "babel src/ -d dist/",
+    "jest": "jest",
     "prepublish": "npm run build",
-    "test": "npm run build && node test.js"
+    "pretest": "npm run build",
+    "test":
+      "node -r dotenv/config test& node_modules/casperjs/bin/casperjs ./test/casper/index.js"
   }
 }

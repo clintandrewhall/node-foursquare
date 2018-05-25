@@ -5,42 +5,50 @@ var _extends = Object.assign || function (target) { for (var i = 1, source; i < 
     util = require('util'),
     https = require('https'),
     urlParser = require('url'),
-    winston = require('winston'),
+    winstonLib = require('winston'),
     emptyCallback = function emptyCallback() {};
 
 module.exports = function (config) {
-  var loggers = winston.loggers;
-
+  var winstonLoggers = winstonLib.loggers,
+      foursquare = config.foursquare,
+      secrets = config.secrets,
+      winston = config.winston,
+      clientId = secrets.clientId,
+      clientSecret = secrets.clientSecret;
 
   function getLogger(name) {
-    if (!loggers.has(name)) {
-      var _logger = loggers.add(name, getLoggerSettings(name));
+    if (!winstonLoggers.has(name)) {
+      var _logger = winstonLoggers.add(name, getLoggerSettings(name));
       _logger.setLevels(config.winston.levels);
     }
-    return loggers.get(name);
+    return winstonLoggers.get(name);
   }
 
   var logger = getLogger('core');
 
   function getLoggerSettings(name) {
-    var loggerTypes = config.winston.loggers[name] || config.winston.loggers.default;
+    var loggers = winston.loggers;
 
-    if (!loggerTypes) {
+
+    if (!loggers) {
       logger.error(`No loggers exist for '${name}', nor is there a default. Update your
         configuration.`);
-
-      loggerTypes = {
-        console: {
-          level: 'warn'
-        }
-      };
+      loggers = {};
     }
 
-    var keys = Object.keys(loggerTypes);
+    var namedLogger = loggers[name],
+        defaultLogger = loggers.default,
+        loggerTypes = namedLogger || defaultLogger || {
+      console: {
+        level: 'warn'
+      }
+    },
+        keys = Object.keys(loggerTypes);
+
 
     keys.forEach(function (loggerType) {
-      loggers[loggerType].label = `node-foursquare:${name}`;
-      loggers[loggerType].colorize = true;
+      loggerTypes[loggerType].label = `node-foursquare:${name}`;
+      loggerTypes[loggerType].colorize = true;
     });
 
     return loggerTypes;
@@ -107,8 +115,8 @@ module.exports = function (config) {
     query = query || {};
 
     if (!accessToken) {
-      query.client_id = config.secrets.clientId;
-      query.client_secret = config.secrets.clientSecret;
+      query.client_id = clientId;
+      query.client_secret = clientSecret;
     } else {
       query.oauth_token = accessToken;
     }

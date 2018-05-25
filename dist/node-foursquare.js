@@ -65,8 +65,10 @@ module.exports = function () {
       authenticateUrl = foursquare.authenticateUrl;
   function getAccessToken(providedParams) {
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : empty,
+        code = providedParams.code,
         params = {
-      grant_type: providedParams && providedParams.grant_type || 'authorization_code',
+      code,
+      grant_type: providedParams.grant_type || 'authorization_code',
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uri: redirectUrl

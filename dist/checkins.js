@@ -105,7 +105,7 @@ module.exports = function (config) {
     var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
         accessToken = arguments[2],
         callback = arguments[3],
-        method = 'likeCheckin';
+        method = 'resolveCheckin';
 
     logger.enter(method);
 

@@ -1,8 +1,8 @@
 /* @flow */
 
-import type {FoursquareConfig} from './config-default';
-import type {CallbackFunction} from './util/callbacks';
-import type {LocationParameter} from './util/locations';
+import type { FoursquareConfig } from './config-default';
+import type { CallbackFunction } from './util/callbacks';
+import type { LocationParameter } from './util/locations';
 
 const coreModule = require('./core');
 const locations = require('./util/locations');
@@ -27,7 +27,7 @@ module.exports = (config: FoursquareConfig) => {
       contentId?: string,
     } = {},
     accessToken: string,
-    callback: CallbackFunction,
+    callback: CallbackFunction
   ) {
     const method = 'addPostToCheckin';
     logger.enter(method);
@@ -42,21 +42,23 @@ module.exports = (config: FoursquareConfig) => {
       path.join('/checkins', checkinId, 'addpost'),
       accessToken,
       params,
-      callback,
+      callback
     );
   }
 
   function createCheckin(
     venueId: string,
     params: ?{
-      broadcast?: Array<'private' | 'public' | 'facebook' | 'twitter' | 'followers'>, // prettier-ignore
+      broadcast?: Array<
+        'private' | 'public' | 'facebook' | 'twitter' | 'followers'
+      >,
       eventId?: string,
       location?: LocationParameter,
       mentions?: Array<string>,
       shout?: string,
     },
     accessToken: string,
-    callback: CallbackFunction,
+    callback: CallbackFunction
   ) {
     const method = 'createCheckin';
     logger.enter(method);
@@ -68,13 +70,13 @@ module.exports = (config: FoursquareConfig) => {
     }
 
     const providedParams = params || {};
-    const {location, ...otherParams} = providedParams;
+    const { location, ...otherParams } = providedParams;
     const locationParams = locations.getLocationAPIParameter(
       params,
       method,
       module,
       logger,
-      callback,
+      callback
     );
 
     core.postApi(
@@ -85,15 +87,15 @@ module.exports = (config: FoursquareConfig) => {
         ...locationParams,
         ...otherParams,
       },
-      callback,
+      callback
     );
   }
 
   function getCheckinDetails(
     checkinId: string,
     params: ?{} = {},
-    accessToken: string,
-    callback: CallbackFunction,
+    accessToken: ?string,
+    callback: CallbackFunction
   ) {
     const method = 'getCheckinDetails';
     logger.enter(method);
@@ -108,7 +110,7 @@ module.exports = (config: FoursquareConfig) => {
       path.join('/checkins', checkinId),
       accessToken,
       params,
-      callback,
+      callback
     );
   }
 
@@ -119,18 +121,18 @@ module.exports = (config: FoursquareConfig) => {
       location?: LocationParameter,
     } = {},
     accessToken: string,
-    callback: CallbackFunction = emptyCallback,
+    callback: CallbackFunction = emptyCallback
   ) {
     const method = 'getRecentCheckins';
     logger.enter(method);
     const providedParams = params || {};
-    const {location, ...otherParams} = providedParams;
+    const { location, ...otherParams } = providedParams;
     const locationParams = locations.getLocationAPIParameter(
       params,
       method,
       module,
       logger,
-      callback,
+      callback
     );
 
     core.callApi(
@@ -140,7 +142,7 @@ module.exports = (config: FoursquareConfig) => {
         ...locationParams,
         ...otherParams,
       },
-      callback,
+      callback
     );
   }
 
@@ -149,7 +151,7 @@ module.exports = (config: FoursquareConfig) => {
     // eslint-disable-next-line
     params: ?{} = {},
     accessToken: string,
-    callback: CallbackFunction,
+    callback: CallbackFunction
   ) {
     const method = 'likeCheckin';
     logger.enter(method);
@@ -163,8 +165,8 @@ module.exports = (config: FoursquareConfig) => {
     core.postApi(
       path.join('/checkins', checkinId, 'like'),
       accessToken,
-      {set: 1},
-      callback,
+      { set: 1 },
+      callback
     );
   }
 
@@ -173,9 +175,9 @@ module.exports = (config: FoursquareConfig) => {
     // eslint-disable-next-line
     params: ?{} = {},
     accessToken: string,
-    callback: CallbackFunction,
+    callback: CallbackFunction
   ) {
-    const method = 'likeCheckin';
+    const method = 'resolveCheckin';
     logger.enter(method);
 
     if (!shortId) {
@@ -184,14 +186,14 @@ module.exports = (config: FoursquareConfig) => {
       return;
     }
 
-    core.postApi('/checkins/resolve', accessToken, {shortId}, callback);
+    core.postApi('/checkins/resolve', accessToken, { shortId }, callback);
   }
 
   function unlikeCheckin(
     checkinId: string,
     params: ?{} = {}, // eslint-disable-line
     accessToken: string,
-    callback: CallbackFunction,
+    callback: CallbackFunction
   ) {
     const method = 'unlikeCheckin';
     logger.enter(method);
@@ -205,8 +207,8 @@ module.exports = (config: FoursquareConfig) => {
     core.postApi(
       path.join('/checkins', checkinId, 'like'),
       accessToken,
-      {set: 0},
-      callback,
+      { set: 0 },
+      callback
     );
   }
 
