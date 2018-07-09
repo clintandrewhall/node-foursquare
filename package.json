@@ -3,8 +3,18 @@
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
   "version": "0.4.0",
   "main": "index.js",
-  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
-  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "keywords": [
+    "node-foursquare",
+    "foursquare",
+    "swarm",
+    "4sq"
+  ],
+  "tags": [
+    "node-foursquare",
+    "foursquare",
+    "swarm",
+    "4sq"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -22,7 +32,6 @@
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.2.5",
     "babel-jest": "^23.2.0",
-    "babel-plugin-remove-comments": "^2.0.0",
     "babel-plugin-transform-merge-sibling-variables": "^6.8.6",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
@@ -56,10 +65,8 @@
     "flow": "flow",
     "build": "babel src/ -d dist/",
     "jest": "jest --runInBand",
-    "prepublish": "npm run build",
     "pretest": "npm run build",
     "test": "node dist/test",
-    "test-casper":
-      "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
+    "test-casper": "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
   }
 }
