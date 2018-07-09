@@ -1,52 +1,36 @@
 /* @flow */
 
+import path from 'path';
+
+import coreModule from './core';
+import locations from './util/locations';
+
 import type { FoursquareConfig } from './config-default';
 import type { CallbackFunction } from './util/callbacks';
 import type { LocationParameter } from './util/locations';
 
-const coreModule = require('./core');
-const locations = require('./util/locations');
-
-const emptyCallback = () => {};
-const path = require('path');
+import { empty } from './util/callbacks';
+import LogHelper from './util/logHelper';
 
 /**
  * A module for retrieving information about Checkins from Foursquare.
  * @module node-foursquare/Checkins
  */
-module.exports = (config: FoursquareConfig) => {
+export default (
+  config: FoursquareConfig
+): {
+  add: Function,
+  addPost: Function,
+  getDetails: Function,
+  like: Function,
+  resolve: Function,
+  unlike: Function,
+} => {
   const core = coreModule(config);
   const logger = core.getLogger('checkins');
-  const module = 'Checkins';
+  const logHelper = new LogHelper('Checkins', logger);
 
-  function addPostToCheckin(
-    checkinId: string,
-    params: ?{
-      text?: string,
-      url?: URL,
-      contentId?: string,
-    } = {},
-    accessToken: string,
-    callback: CallbackFunction
-  ) {
-    const method = 'addPostToCheckin';
-    logger.enter(method);
-
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
-      return;
-    }
-
-    core.postApi(
-      path.join('/checkins', checkinId, 'addpost'),
-      accessToken,
-      params,
-      callback
-    );
-  }
-
-  function createCheckin(
+  const add = (
     venueId: string,
     params: ?{
       broadcast?: Array<
@@ -58,26 +42,28 @@ module.exports = (config: FoursquareConfig) => {
       shout?: string,
     },
     accessToken: string,
-    callback: CallbackFunction
-  ) {
+    callback: CallbackFunction = empty
+  ) => {
     const method = 'createCheckin';
     logger.enter(method);
 
-    if (!venueId) {
-      logger.error(`${method}: venueId is required.`);
-      callback(new Error(`${module}.${method}: venueId is required.`));
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
       return;
     }
 
     const providedParams = params || {};
+
+    // eslint-disable-next-line no-unused-vars
     const { location, ...otherParams } = providedParams;
     const locationParams = locations.getLocationAPIParameter(
       params,
       method,
-      module,
+      'Checkins',
       logger,
       callback
     );
+
+    logHelper.debugParams({ ...locationParams, ...otherParams }, method);
 
     core.postApi(
       '/checkins/add',
@@ -89,22 +75,49 @@ module.exports = (config: FoursquareConfig) => {
       },
       callback
     );
-  }
+  };
 
-  function getCheckinDetails(
+  const addPost = (
+    checkinId: string,
+    params: ?{
+      text?: string,
+      url?: URL,
+      contentId?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) => {
+    const method = 'addPost';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      path.join('/checkins', checkinId, 'addpost'),
+      accessToken,
+      params,
+      callback
+    );
+  };
+
+  const getDetails = (
     checkinId: string,
     params: ?{} = {},
     accessToken: ?string,
     callback: CallbackFunction
-  ) {
-    const method = 'getCheckinDetails';
+  ) => {
+    const method = 'getDetails';
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
       return;
     }
+
+    logHelper.debugParams(params, method);
 
     core.callApi(
       path.join('/checkins', checkinId),
@@ -112,55 +125,22 @@ module.exports = (config: FoursquareConfig) => {
       params,
       callback
     );
-  }
+  };
 
-  function getRecentCheckins(
-    params: ?{
-      afterTimestamp?: number,
-      limit?: number,
-      location?: LocationParameter,
-    } = {},
-    accessToken: string,
-    callback: CallbackFunction = emptyCallback
-  ) {
-    const method = 'getRecentCheckins';
-    logger.enter(method);
-    const providedParams = params || {};
-    const { location, ...otherParams } = providedParams;
-    const locationParams = locations.getLocationAPIParameter(
-      params,
-      method,
-      module,
-      logger,
-      callback
-    );
-
-    core.callApi(
-      '/checkins/recent',
-      accessToken,
-      {
-        ...locationParams,
-        ...otherParams,
-      },
-      callback
-    );
-  }
-
-  function likeCheckin(
+  const like = (
     checkinId: string,
-    // eslint-disable-next-line
     params: ?{} = {},
     accessToken: string,
-    callback: CallbackFunction
-  ) {
-    const method = 'likeCheckin';
+    callback: CallbackFunction = empty
+  ) => {
+    const method = 'like';
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
       return;
     }
+
+    logHelper.debugParams(params, method);
 
     core.postApi(
       path.join('/checkins', checkinId, 'like'),
@@ -168,41 +148,40 @@ module.exports = (config: FoursquareConfig) => {
       { set: 1 },
       callback
     );
-  }
+  };
 
-  function resolveCheckin(
+  const resolve = (
     shortId: string,
-    // eslint-disable-next-line
     params: ?{} = {},
     accessToken: string,
     callback: CallbackFunction
-  ) {
-    const method = 'resolveCheckin';
+  ) => {
+    const method = 'resolve';
     logger.enter(method);
 
-    if (!shortId) {
-      logger.error(`${method}: shortId is required.`);
-      callback(new Error(`${module}.${method}: shortId is required.`));
+    if (!logHelper.debugAndCheckParams({ shortId }, method, callback)) {
       return;
     }
 
-    core.postApi('/checkins/resolve', accessToken, { shortId }, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function unlikeCheckin(
+    core.callApi('/checkins/resolve', accessToken, { shortId }, callback);
+  };
+
+  const unlike = (
     checkinId: string,
-    params: ?{} = {}, // eslint-disable-line
+    params: ?{} = {},
     accessToken: string,
-    callback: CallbackFunction
-  ) {
-    const method = 'unlikeCheckin';
+    callback: CallbackFunction = empty
+  ) => {
+    const method = 'unlike';
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
       return;
     }
+
+    logHelper.debugParams(params, method);
 
     core.postApi(
       path.join('/checkins', checkinId, 'like'),
@@ -210,15 +189,14 @@ module.exports = (config: FoursquareConfig) => {
       { set: 0 },
       callback
     );
-  }
+  };
 
   return {
-    addPostToCheckin,
-    createCheckin,
-    getCheckinDetails,
-    getRecentCheckins,
-    likeCheckin,
-    resolveCheckin,
-    unlikeCheckin,
+    add,
+    addPost,
+    getDetails,
+    like,
+    resolve,
+    unlike,
   };
 };

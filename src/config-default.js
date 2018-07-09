@@ -2,10 +2,31 @@
 
 const winston = require('winston');
 
-type WinstonLogger = {
-  label?: string,
-  level?: string,
-  colorize?: boolean,
+export type WinstonLoggerName =
+  | 'all'
+  | 'checkins'
+  | 'core'
+  | 'events'
+  | 'lists'
+  | 'photos'
+  | 'settings'
+  | 'specials'
+  | 'tips'
+  | 'updates'
+  | 'venues';
+
+export type WinstonLoggerLevel =
+  | 'detail'
+  | 'trace'
+  | 'debug'
+  | 'enter'
+  | 'info'
+  | 'warn'
+  | 'error';
+
+export type WinstonLoggerConfig = {
+  level: WinstonLoggerLevel,
+  transports: Array<$winstonTransport>,
 };
 
 export type FoursquareConfig = {
@@ -24,10 +45,7 @@ export type FoursquareConfig = {
     redirectUrl: string,
   },
   winston: {
-    colors?: { [string]: string },
-    levels?: { [string]: number },
-    loggers?: ?Object,
-    transports?: Array<any>,
+    [WinstonLoggerName]: WinstonLoggerConfig,
   },
 };
 
@@ -59,39 +77,9 @@ const defaultConfig: FoursquareConfig = {
     redirectUrl: '',
   },
   winston: {
-    transports: [
-      new winston.transports.Console({
-        colorize: true,
-        level: 'enter',
-        name: 'console',
-      }),
-    ],
-    levels: {
-      detail: 6,
-      trace: 5,
-      debug: 4,
-      enter: 3,
-      info: 2,
-      warn: 1,
-      error: 0,
-    },
-    colors: {
-      debug: 'blue',
-      detail: 'grey',
-      enter: 'inverse',
-      error: 'red',
-      info: 'green',
-      trace: 'white',
-      warn: 'yellow',
-    },
-    loggers: {
-      default: {
-        console: {
-          colorize: true,
-          label: 'default',
-          level: 'none',
-        },
-      },
+    all: {
+      level: 'warn',
+      transports: [new winston.transports.Console()],
     },
   },
 };

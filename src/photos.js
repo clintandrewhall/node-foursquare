@@ -1,37 +1,47 @@
-var path = require('path'),
-    util = require('util');
+/* @flow */
+import path from 'path';
+
+import coreLib from './core';
+import LogHelper from './util/logHelper';
+
+import type { FoursquareConfig } from './config-default';
+import type { CallbackFunction } from './util/callbacks';
 
 /**
  * A module for retrieving information about Photos from Foursquare.
- * @param {Object} config A valid configuration.
  * @module node-foursquare/Photos
  */
-module.exports = function(config) {
-  var core = require('./core')(config),
-    logger = core.getLogger('photos');
+module.exports = function(
+  config: FoursquareConfig
+): {
+  get: Function,
+} {
+  const core = coreLib(config);
+  const logger = core.getLogger('photos');
+  const logHelper = new LogHelper('Photos', logger);
 
   /**
    * Retrieve a photo from Foursquare.
-   * @memberof module:node-foursquare/Photos
-   * @param {String} photoId The id of the Photo to retrieve.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/photos/photos.html
    */
-  function getPhoto(photoId, accessToken, callback) {
-    logger.enter('getPhoto');
+  const get = (
+    photoId: string,
+    params: ?{} = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'get';
+    logger.enter(method);
 
-    if(!photoId) {
-      logger.error('getPhoto: photoId is required.');
-      callback(new Error('Photos.getPhoto: photoId is required.'));
+    if (!logHelper.debugAndCheckParams({ photoId }, method, callback)) {
       return;
     }
 
-    logger.debug('search:photoId: ' + photoId);
+    logHelper.debugParams(params, method);
+
     core.callApi(path.join('/photos', photoId), accessToken, null, callback);
-  }
+  };
 
   return {
-    'getPhoto' : getPhoto
-  }
+    get,
+  };
 };

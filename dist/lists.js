@@ -1,96 +1,145 @@
 'use strict';
 
-var path = require('path'),
-    util = require('util');
+var _extends = Object.assign || function (target) { for (var i = 1, source; i < arguments.length; i++) { source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _path = require('path'),
+    _path2 = _interopRequireDefault(_path),
+    _core = require('./core'),
+    _core2 = _interopRequireDefault(_core),
+    _callbacks = require('./util/callbacks'),
+    _logHelper = require('./util/logHelper'),
+    _logHelper2 = _interopRequireDefault(_logHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (config) {
-  var core = require('./core')(config),
-      logger = core.getLogger('events');
+  var core = (0, _core2.default)(config),
+      logger = core.getLogger('lists'),
+      logHelper = new _logHelper2.default('Lists', logger);
 
-  function getList(listId, accessToken, callback) {
-    logger.enter('getList');
+  function getByID(listId, accessToken, callback) {
+    var method = 'get';
+    logger.enter(method);
 
-    if (!listId) {
-      logger.error('getList: listId is required.');
-      callback(new Error('Lists.getList: listId is required.'));
+    if (!logHelper.debugAndCheckParams({ listId }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    core.callApi(path.join('/lists', listId), accessToken, null, callback);
+    core.callApi(_path2.default.join('/lists', listId), accessToken, null, callback);
   }
 
-  function getFollowers(listId, accessToken, callback) {
-    logger.enter('getFollowers');
+  function getByName(userNameOrId, listName, accessToken, callback) {
+    var method = 'getByName';
 
-    if (!listId) {
-      logger.error('getFollowers: listId is required.');
-      callback(new Error('Lists.getFollowers: listId is required.'));
+    if (!logHelper.debugAndCheckParams({ userNameOrId, listName }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    core.callApi(path.join('/lists', listId, 'followers'), accessToken, null, callback);
+    core.callApi(_path2.default.join('/lists', userNameOrId, listName), accessToken, null, callback);
   }
 
-  function getSuggestedVenues(listId, accessToken, callback) {
-    logger.enter('getSuggestedVenues');
+  function create(name) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
+        accessToken = arguments[2],
+        method = 'create';
 
-    if (!listId) {
-      logger.error('getSuggestedVenues: listId is required.');
-      callback(new Error('Lists.getSuggestedVenues: listId is required.'));
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ name }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    core.callApi(path.join('/lists', listId, 'suggestvenues'), accessToken, null, callback);
+    logHelper.debugParams(params, method);
+
+    core.postApi('/lists/add', accessToken, _extends({
+      name
+    }, params), callback);
   }
 
-  function getSuggestedPhotos(listId, itemId, accessToken, callback) {
-    logger.enter('getSuggestedPhotos');
+  function addItemByVenue(listId, venueId) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
+        accessToken = arguments[3],
+        method = 'addItemByVenue';
 
-    if (!listId) {
-      logger.error('getSuggestedPhotos: listId is required.');
-      callback(new Error('Lists.getSuggestedPhotos: listId is required.'));
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ listId, venueId }, method, callback)) {
       return;
     }
 
-    if (!itemId) {
-      logger.error('getSuggestedPhotos: itemId is required.');
-      callback(new Error('Lists.getSuggestedPhotos: itemId is required.'));
-      return;
-    }
+    logHelper.debugParams(params, method);
 
-    logger.debug('getList:listId: ' + listId);
-    logger.debug('getList:itemId: ' + itemId);
-    core.callApi(path.join('/lists', listId, 'suggestphoto'), accessToken, { 'itemId': itemId }, callback);
+    core.postApi(_path2.default.join('/lists', listId, 'additem'), accessToken, _extends({
+      venueId
+    }, params), callback);
   }
 
-  function getSuggestedTips(listId, itemId, accessToken, callback) {
-    logger.enter('getSuggestedTips');
+  function addItemByTip(listId, tipId) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
+        accessToken = arguments[3],
+        method = 'addItemByTip';
 
-    if (!listId) {
-      logger.error('getSuggestedTips: listId is required.');
-      callback(new Error('Lists.getSuggestedTips: listId is required.'));
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ listId, tipId }, method, callback)) {
       return;
     }
 
-    if (!itemId) {
-      logger.error('getSuggestedTips: itemId is required.');
-      callback(new Error('Lists.getSuggestedTips: itemId is required.'));
+    logHelper.debugParams(params, method);
+
+    core.postApi(_path2.default.join('/lists', listId, 'additem'), accessToken, _extends({
+      tipId
+    }, params), callback);
+  }
+
+  function addItem(listId, itemId) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
+        accessToken = arguments[3],
+        method = 'addItem';
+
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ listId, itemId }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    logger.debug('getList:itemId: ' + itemId);
-    core.callApi(path.join('/lists', listId, 'suggesttip'), accessToken, { 'itemId': itemId }, callback);
+    logHelper.debugParams(params, method);
+
+    core.postApi(_path2.default.join('/lists', listId, 'additem'), accessToken, _extends({
+      itemId
+    }, params), callback);
+  }
+
+  function shareList(listId, broadcast) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
+        accessToken = arguments[3],
+        method = 'shareList';
+
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ listId, broadcast }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.postApi(_path2.default.join('/lists', listId, 'additem'), accessToken, _extends({
+      broadcast
+    }, params), callback);
   }
 
   return {
-    'getList': getList,
-    'getFollowers': getFollowers,
-    'getSuggestedPhotos': getSuggestedPhotos,
-    'getSuggestedTips': getSuggestedTips,
-    'getSuggestedVenues': getSuggestedVenues
+    addItem,
+    addItemByTip,
+    addItemByVenue,
+    create,
+    getByID,
+    getByName,
+    shareList
   };
 };

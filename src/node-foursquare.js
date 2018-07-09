@@ -6,38 +6,28 @@
  * @author Clint Andrew Hall
  * @description A NodeJS module for interacting with Foursquare.
  */
-import type {CallbackFunction} from './util/callbacks';
+import type { CallbackFunction } from './util/callbacks';
 
-const qs = require('querystring');
-const winstonLib = require('winston');
+import qs from 'querystring';
 
-const defaultConfig = require('./config-default');
-const mergeDeep = require('./util/mergeDeep');
-const coreLib = require('./core');
-const {empty} = require('./util/callbacks');
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
+import coreLib from './core';
+import { empty } from './util/callbacks';
 
-const users = require('./users');
-const venues = require('./venues');
-const checkins = require('./checkins');
-const tips = require('./tips');
-const lists = require('./lists');
-const photos = require('./photos');
-const settings = require('./settings');
-const specials = require('./specials');
-const updates = require('./updates');
-const events = require('./events');
+import users from './users';
+import venues from './venues';
+import checkins from './checkins';
+import tips from './tips';
+import lists from './lists';
+import photos from './photos';
 
 const version = '12122017';
 
 module.exports = (providedConfig: ?Object = {}) => {
-  const config = mergeDeep(providedConfig || {}, defaultConfig);
-  const {winston} = config;
-  const {colors, levels} = winston;
-
-  winstonLib.addColors(colors);
-
-  const logger = new winstonLib.Logger(winston);
-  logger.setLevels(levels);
+  const config = mergeDeep(defaultConfig, providedConfig || {});
+  const core = coreLib(config);
+  const logger = core.getLogger('all');
 
   if (
     !config.secrets ||
@@ -47,7 +37,7 @@ module.exports = (providedConfig: ?Object = {}) => {
   ) {
     logger.error(
       `Client configuration not supplied; add config.secrets information,
-      (clientId, clientSecret, redirectUrl).`,
+      (clientId, clientSecret, redirectUrl).`
     );
     throw new Error('Configuration Error: Client information not supplied.');
   }
@@ -55,10 +45,10 @@ module.exports = (providedConfig: ?Object = {}) => {
   if (!config.foursquare.accessTokenUrl || !config.foursquare.apiUrl) {
     logger.error(
       `Foursquare configuration not supplied; add config.foursquare
-      information, (accessTokenUrl, apiUrl)`,
+      information, (accessTokenUrl, apiUrl)`
     );
     throw new TypeError(
-      'Configuration Error: Foursquare information not supplied.',
+      'Configuration Error: Foursquare information not supplied.'
     );
   }
 
@@ -66,7 +56,7 @@ module.exports = (providedConfig: ?Object = {}) => {
     config.foursquare.version = version;
     logger.warn(
       `Foursquare API version not defined in configuration; defaulting to
-      latest: ${config.foursquare.version}`,
+      latest: ${config.foursquare.version}`
     );
   }
 
@@ -75,14 +65,13 @@ module.exports = (providedConfig: ?Object = {}) => {
     logger.warn(
       `Foursquare API mode not defined in configuration; defaulting to: ${
         config.foursquare.mode
-      }`,
+      }`
     );
   }
 
-  const core = coreLib(config);
-  const {foursquare, secrets} = config;
-  const {clientId, clientSecret, redirectUrl} = secrets;
-  const {accessTokenUrl, authenticateUrl} = foursquare;
+  const { foursquare, secrets } = config;
+  const { clientId, clientSecret, redirectUrl } = secrets;
+  const { accessTokenUrl, authenticateUrl } = foursquare;
 
   /**
    * Exchange a user authorization code for an access token.
@@ -93,13 +82,12 @@ module.exports = (providedConfig: ?Object = {}) => {
       code: string,
       grant_type?: ?string,
     },
-    callback: CallbackFunction = empty,
-  ) {
-    const {code} = providedParams;
+    callback: CallbackFunction = empty
+  ): void {
+    const { code } = providedParams;
     const params = {
       code,
-      grant_type:
-        providedParams.grant_type || 'authorization_code',
+      grant_type: providedParams.grant_type || 'authorization_code',
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uri: redirectUrl,
@@ -125,7 +113,7 @@ module.exports = (providedConfig: ?Object = {}) => {
             callback(e);
           }
         }
-      },
+      }
     );
   }
 
@@ -134,8 +122,9 @@ module.exports = (providedConfig: ?Object = {}) => {
    * permission to the application.
    * @memberof module:node-foursquare
    */
-  function getAuthClientRedirectUrl() {
-    return `${authenticateUrl}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUrl}`;
+  function getAuthClientRedirectUrl(): string {
+    return `${authenticateUrl}?client_id=${clientId}&response_type=code
+      &redirect_uri=${redirectUrl}`;
   }
 
   return {
@@ -145,10 +134,6 @@ module.exports = (providedConfig: ?Object = {}) => {
     Tips: tips(config),
     Lists: lists(config),
     Photos: photos(config),
-    Settings: settings(config),
-    Specials: specials(config),
-    Updates: updates(config),
-    Events: events(config),
     getAccessToken,
     getAuthClientRedirectUrl,
   };

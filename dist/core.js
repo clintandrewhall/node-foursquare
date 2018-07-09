@@ -1,65 +1,95 @@
 'use strict';
 
-var _extends = Object.assign || function (target) { for (var i = 1, source; i < arguments.length; i++) { source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; },
-    qs = require('querystring'),
-    util = require('util'),
-    https = require('https'),
-    urlParser = require('url'),
-    winstonLib = require('winston'),
-    emptyCallback = function emptyCallback() {};
+var _extends = Object.assign || function (target) { for (var i = 1, source; i < arguments.length; i++) { source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _querystring = require('querystring'),
+    _querystring2 = _interopRequireDefault(_querystring),
+    _util = require('util'),
+    _util2 = _interopRequireDefault(_util),
+    _https = require('https'),
+    _https2 = _interopRequireDefault(_https),
+    _url = require('url'),
+    _url2 = _interopRequireDefault(_url),
+    _winston = require('winston'),
+    _winston2 = _interopRequireDefault(_winston),
+    _events = require('events'),
+    _events2 = _interopRequireDefault(_events),
+    _callbacks = require('./util/callbacks');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var format = _winston2.default.format,
+    combine = format.combine,
+    colorize = format.colorize,
+    timestamp = format.timestamp,
+    label = format.label,
+    printf = format.printf,
+    levels = {
+  detail: 6,
+  trace: 5,
+  debug: 4,
+  enter: 3,
+  info: 2,
+  warn: 1,
+  error: 0
+};
+_winston2.default.addColors({
+  debug: 'blue',
+  detail: 'grey',
+  enter: 'inverse',
+  error: 'red',
+  info: 'green',
+  trace: 'white',
+  warn: 'yellow'
+});
+
+var loggerFormat = printf(function (info) {
+  return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
+});
 
 module.exports = function (config) {
-  var winstonLoggers = winstonLib.loggers,
-      foursquare = config.foursquare,
-      secrets = config.secrets,
+  var secrets = config.secrets,
       winston = config.winston,
       clientId = secrets.clientId,
       clientSecret = secrets.clientSecret;
 
+
   function getLogger(name) {
-    if (!winstonLoggers.has(name)) {
-      var _logger = winstonLoggers.add(name, getLoggerSettings(name));
-      _logger.setLevels(config.winston.levels);
+    if (!_winston2.default.loggers.has(name)) {
+      var maxListeners = _events2.default.defaultMaxListeners;
+
+      _events2.default.defaultMaxListeners = Infinity;
+      _winston2.default.loggers.add(name, getLoggerSettings(name));
+
+      _events2.default.defaultMaxListeners = maxListeners;
     }
-    return winstonLoggers.get(name);
+
+    return _winston2.default.loggers.get(name);
   }
 
   var logger = getLogger('core');
 
   function getLoggerSettings(name) {
-    var loggers = winston.loggers;
-
-
-    if (!loggers) {
-      logger.error(`No loggers exist for '${name}', nor is there a default. Update your
-        configuration.`);
-      loggers = {};
-    }
-
-    var namedLogger = loggers[name],
-        defaultLogger = loggers.default,
-        loggerTypes = namedLogger || defaultLogger || {
-      console: {
-        colorize: true,
-        label: 'default',
-        level: 'warn'
-      }
+    var allConfig = winston['all'] || {
+      level: 'warn',
+      transports: [new _winston2.default.transports.Console()]
     },
-        keys = Object.keys(loggerTypes);
+        _ref = winston[name] || allConfig,
+        transports = _ref.transports,
+        level = _ref.level;
 
-
-    keys.forEach(function (loggerType) {
-      loggerTypes[loggerType].label = `node-foursquare:${name}`;
-      loggerTypes[loggerType].colorize = true;
-    });
-
-    return loggerTypes;
+    return {
+      format: combine(colorize({ message: true }), label({ label: name }), timestamp(), loggerFormat),
+      level,
+      levels,
+      transports
+    };
   }
 
   function retrieve(url) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : emptyCallback,
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _callbacks.empty,
         method = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'GET',
-        parsedURL = urlParser.parse(url, true),
+        parsedURL = _url2.default.parse(url, true),
         hostname = parsedURL.hostname,
         protocol = parsedURL.protocol,
         pathname = parsedURL.pathname,
@@ -68,7 +98,6 @@ module.exports = function (config) {
         result = '',
         request = null;
 
-
     if (protocol === 'https:' && !port) {
       port = '443';
     }
@@ -76,13 +105,13 @@ module.exports = function (config) {
     query = query || {};
     pathname = pathname || '';
 
-    var path = `${pathname}?${qs.stringify(query)}`,
+    var path = `${pathname}?${_querystring2.default.stringify(query)}`,
         locale = config.locale || 'en';
 
 
     logger.debug(`retrieve: Request path: ${path}`);
 
-    request = https.request({
+    request = _https2.default.request({
       host: hostname,
       port,
       path,
@@ -109,9 +138,9 @@ module.exports = function (config) {
   }
 
   function invokeApi(url, accessToken) {
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : emptyCallback,
+    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _callbacks.empty,
         method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'GET',
-        parsedURL = urlParser.parse(url, true),
+        parsedURL = _url2.default.parse(url, true),
         query = parsedURL.query;
 
     query = query || {};
@@ -127,22 +156,22 @@ module.exports = function (config) {
       query.v = config.foursquare.version;
     }
 
-    parsedURL.search = `?${qs.stringify(query)}`;
+    parsedURL.search = `?${_querystring2.default.stringify(query)}`;
     parsedURL.query = query;
-    var newURL = urlParser.format(parsedURL);
+    var newURL = _url2.default.format(parsedURL);
 
     retrieve(newURL, function (error, status, result) {
       if (error) {
         callback(error);
       } else {
-        logger.trace(`invokeApi: Result: ${util.inspect(result)}`);
+        logger.trace(`invokeApi: Result: ${_util2.default.inspect(result)}`);
         callback(null, status, result);
       }
     }, method);
   }
 
   function extract(url, status, result) {
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : emptyCallback,
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
         json = null;
 
 
@@ -169,10 +198,10 @@ module.exports = function (config) {
 
 
     if (!meta) {
-      logger.error(`Response had no metadata: ${util.inspect(json)}`);
+      logger.error(`Response had no metadata: ${_util2.default.inspect(json)}`);
       callback({
         status,
-        error: new Error(`Response had no metadata: ${util.inspect(json)}`)
+        error: new Error(`Response had no metadata: ${_util2.default.inspect(json)}`)
       });
       return;
     }
@@ -183,10 +212,10 @@ module.exports = function (config) {
 
 
     if (!code) {
-      logger.error(`Response had no code: ${util.inspect(json)}`);
+      logger.error(`Response had no code: ${_util2.default.inspect(json)}`);
       callback({
         status,
-        error: new Error(`Response had no code: ${util.inspect(json)}`)
+        error: new Error(`Response had no code: ${_util2.default.inspect(json)}`)
       });
       return;
     } else if (code !== 200) {
@@ -200,7 +229,7 @@ module.exports = function (config) {
     }
 
     if (errorType) {
-      var _urlParser$parse = urlParser.parse(url),
+      var _urlParser$parse = _url2.default.parse(url),
           pathname = _urlParser$parse.pathname;
 
       pathname = pathname || '';
@@ -224,7 +253,7 @@ module.exports = function (config) {
   }
 
   function callApi(path, accessToken, params) {
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : emptyCallback,
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
         method = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'GET',
         url = config.foursquare.apiUrl + path,
         queryParams = _extends({}, params);
@@ -242,7 +271,7 @@ module.exports = function (config) {
         delete queryParams.lng;
       }
 
-      url += `?${qs.stringify(queryParams)}`;
+      url += `?${_querystring2.default.stringify(queryParams)}`;
     }
 
     logger.trace(`callApi: Request URL: ${url}`);

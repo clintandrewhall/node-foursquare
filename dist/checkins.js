@@ -1,147 +1,138 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _extends = Object.assign || function (target) { for (var i = 1, source; i < arguments.length; i++) { source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _path = require('path'),
+    _path2 = _interopRequireDefault(_path),
+    _core = require('./core'),
+    _core2 = _interopRequireDefault(_core),
+    _locations = require('./util/locations'),
+    _locations2 = _interopRequireDefault(_locations),
+    _callbacks = require('./util/callbacks'),
+    _logHelper = require('./util/logHelper'),
+    _logHelper2 = _interopRequireDefault(_logHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
-var coreModule = require('./core'),
-    locations = require('./util/locations'),
-    emptyCallback = function emptyCallback() {},
-    path = require('path');
-
-module.exports = function (config) {
-  var core = coreModule(config),
+exports.default = function (config) {
+  var core = (0, _core2.default)(config),
       logger = core.getLogger('checkins'),
-      module = 'Checkins';
-
-
-  function addPostToCheckin(checkinId) {
-    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-        accessToken = arguments[2],
-        callback = arguments[3],
-        method = 'addPostToCheckin';
+      logHelper = new _logHelper2.default('Checkins', logger),
+      add = function add(venueId, params, accessToken) {
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
+        method = 'createCheckin';
 
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
-      return;
-    }
-
-    core.postApi(path.join('/checkins', checkinId, 'addpost'), accessToken, params, callback);
-  }
-
-  function createCheckin(venueId, params, accessToken, callback) {
-    var method = 'createCheckin';
-    logger.enter(method);
-
-    if (!venueId) {
-      logger.error(`${method}: venueId is required.`);
-      callback(new Error(`${module}.${method}: venueId is required.`));
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
       return;
     }
 
     var providedParams = params || {},
         location = providedParams.location,
         otherParams = _objectWithoutProperties(providedParams, ['location']),
-        locationParams = locations.getLocationAPIParameter(params, method, module, logger, callback);
+        locationParams = _locations2.default.getLocationAPIParameter(params, method, 'Checkins', logger, callback);
+
+    logHelper.debugParams(_extends({}, locationParams, otherParams), method);
 
     core.postApi('/checkins/add', accessToken, _extends({
       venueId
     }, locationParams, otherParams), callback);
-  }
-
-  function getCheckinDetails(checkinId) {
+  },
+      addPost = function addPost(checkinId) {
     var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
         accessToken = arguments[2],
-        callback = arguments[3],
-        method = 'getCheckinDetails';
+        method = 'addPost';
 
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
       return;
     }
 
-    core.callApi(path.join('/checkins', checkinId), accessToken, params, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function getRecentCheckins() {
-    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : emptyCallback,
-        accessToken = arguments[1],
-        method = 'getRecentCheckins';
-
-    logger.enter(method);
-    var providedParams = params || {},
-        location = providedParams.location,
-        otherParams = _objectWithoutProperties(providedParams, ['location']),
-        locationParams = locations.getLocationAPIParameter(params, method, module, logger, callback);
-
-    core.callApi('/checkins/recent', accessToken, _extends({}, locationParams, otherParams), callback);
-  }
-
-  function likeCheckin(checkinId) {
+    core.postApi(_path2.default.join('/checkins', checkinId, 'addpost'), accessToken, params, callback);
+  },
+      getDetails = function getDetails(checkinId) {
     var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
         accessToken = arguments[2],
         callback = arguments[3],
-        method = 'likeCheckin';
+        method = 'getDetails';
 
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
       return;
     }
 
-    core.postApi(path.join('/checkins', checkinId, 'like'), accessToken, { set: 1 }, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function resolveCheckin(shortId) {
+    core.callApi(_path2.default.join('/checkins', checkinId), accessToken, params, callback);
+  },
+      like = function like(checkinId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
+        accessToken = arguments[2],
+        method = 'like';
+
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.postApi(_path2.default.join('/checkins', checkinId, 'like'), accessToken, { set: 1 }, callback);
+  },
+      resolve = function resolve(shortId) {
     var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
         accessToken = arguments[2],
         callback = arguments[3],
-        method = 'resolveCheckin';
+        method = 'resolve';
 
     logger.enter(method);
 
-    if (!shortId) {
-      logger.error(`${method}: shortId is required.`);
-      callback(new Error(`${module}.${method}: shortId is required.`));
+    if (!logHelper.debugAndCheckParams({ shortId }, method, callback)) {
       return;
     }
 
-    core.postApi('/checkins/resolve', accessToken, { shortId }, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function unlikeCheckin(checkinId) {
+    core.callApi('/checkins/resolve', accessToken, { shortId }, callback);
+  },
+      unlike = function unlike(checkinId) {
     var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+        callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
         accessToken = arguments[2],
-        callback = arguments[3],
-        method = 'unlikeCheckin';
+        method = 'unlike';
 
     logger.enter(method);
 
-    if (!checkinId) {
-      logger.error(`${method}: checkinId is required.`);
-      callback(new Error(`${module}.${method}: checkinId is required.`));
+    if (!logHelper.debugAndCheckParams({ checkinId }, method, callback)) {
       return;
     }
 
-    core.postApi(path.join('/checkins', checkinId, 'like'), accessToken, { set: 0 }, callback);
-  }
+    logHelper.debugParams(params, method);
+
+    core.postApi(_path2.default.join('/checkins', checkinId, 'like'), accessToken, { set: 0 }, callback);
+  };
+
 
   return {
-    addPostToCheckin,
-    createCheckin,
-    getCheckinDetails,
-    getRecentCheckins,
-    likeCheckin,
-    resolveCheckin,
-    unlikeCheckin
+    add,
+    addPost,
+    getDetails,
+    like,
+    resolve,
+    unlike
   };
 };

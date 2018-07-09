@@ -1,17 +1,21 @@
 "use strict";
 
-function isLocationParameterValid(location) {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+var isLocationParameterValid = function isLocationParameterValid(location) {
   if (location) {
     var _lat = location.lat,
         _long = location.long;
 
-    return !(_lat && !_long || !_lat && _long);
+    return !!_lat && !!_long;
   }
 
   return false;
-}
-
-function createLocationAPIParameters(location) {
+},
+    createLocationAPIParameters = function createLocationAPIParameters(location) {
   if (location) {
     var _accuracy = location.accuracy,
         _altitude = location.altitude,
@@ -41,31 +45,29 @@ function createLocationAPIParameters(location) {
   }
 
   return null;
-}
+};
 
-function getLocationAPIParameter(params, method, module, logger, callback) {
-  if (!params) {
-    return null;
-  }
-
-  var location = params.location;
-
-
-  if (!location) {
-    return null;
-  }
-
-  if (!isLocationParameterValid(location)) {
-    logger.error(`${method}: location parameter is not valid.`);
-    callback(new Error(`${module}.${method}: location parameter is not valid.`));
-    return null;
-  }
-
-  return createLocationAPIParameters(location);
-}
-
-module.exports = {
+exports.default = {
   createLocationAPIParameters,
-  getLocationAPIParameter,
-  isLocationParameterValid
+  isLocationParameterValid,
+  getLocationAPIParameter: function getLocationAPIParameter(params, method, module, logger, callback) {
+    if (!params) {
+      return null;
+    }
+
+    var location = params.location;
+
+
+    if (!location) {
+      return null;
+    }
+
+    if (!isLocationParameterValid(location)) {
+      logger.error(`${method}: location parameter is not valid.`);
+      callback(new Error(`${module}.${method}: location parameter is not valid.`));
+      return null;
+    }
+
+    return createLocationAPIParameters(location);
+  }
 };

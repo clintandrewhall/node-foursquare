@@ -1,8 +1,10 @@
 /* @flow */
-
 const express = require('express');
 const jest = require('jest');
-const nodeFoursquare = require('./../dist/node-foursquare');
+const nodeFoursquare = require('./../node-foursquare');
+
+require('dotenv').config();
+
 const config = {
   foursquare: {
     mode: 'foursquare',
@@ -20,23 +22,23 @@ const Foursquare = nodeFoursquare(config);
 // Using express was just faster... *sigh*
 const app = express();
 
-app.get('/', (req, res) => {
-  const url = Foursquare.getAuthClientRedirectUrl(
-    config.secrets.clientId,
-    config.secrets.redirectUrl
-  );
+app.get('/', (req: express$Request, res: express$Response) => {
+  const url = Foursquare.getAuthClientRedirectUrl();
   res.writeHead(303, { location: url });
   res.end();
 });
 
-app.get('/callback', (req, res) => {
+app.get('/callback', (req: express$Request, res: express$Response) => {
+  const code = ((req.query.code: any): string);
   Foursquare.getAccessToken(
     {
-      code: req.query.code,
+      code,
     },
-    (error, accessToken) => {
+    (error: ?Error, accessToken: ?string) => {
       if (error) {
         res.send(`An error was thrown: ${error.message}`);
+      } else if (!accessToken) {
+        res.send(`No access token was provided`);
       } else {
         res.redirect(`/test?token=${accessToken}`);
       }
@@ -44,8 +46,8 @@ app.get('/callback', (req, res) => {
   );
 });
 
-app.get('/test', (req, res) => {
-  const accessToken = req.query.token || null;
+app.get('/test', (req: express$Request, res: express$Response) => {
+  const accessToken = ((req.query.token: any): string) || '';
   process.env.ACCESS_TOKEN = accessToken;
   let type = `Running Jest tests with${accessToken ? '' : 'out'} Authorization`;
 
@@ -63,4 +65,18 @@ app.get('/test', (req, res) => {
   });
 });
 
-app.listen(3000);
+app.listen(3000, () => {
+  const spawn = require('child_process').spawn;
+  const casper = spawn('npm', ['run', 'test-casper']);
+  casper.stdout.pipe(process.stdout);
+
+  casper.on('error', function() {
+    // $FlowFixMe$ The express definition does not include server.close
+    app.close();
+  });
+
+  casper.on('close', function() {
+    // $FlowFixMe$ The express definition does not include server.close
+    app.close();
+  });
+});

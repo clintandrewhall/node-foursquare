@@ -1,142 +1,251 @@
+/* @flow */
+import path from 'path';
 
-var path = require('path'),
-    util = require('util');
+import coreLib from './core';
+
+import type { FoursquareConfig } from './config-default';
+import type { CallbackFunction } from './util/callbacks';
+
+import { empty } from './util/callbacks';
+import LogHelper from './util/logHelper';
 
 /**
- * A module for retrieving information about Photos from Foursquare.
- * @param {Object} config A valid configuration.
- * @module node-foursquare/Photos
+ * A module for retrieving information about Lists from Foursquare.
+ * @module node-foursquare/Lists
  */
-module.exports = function(config) {
-  var core = require('./core')(config),
-    logger = core.getLogger('events');
+module.exports = function(
+  config: FoursquareConfig
+): {
+  addItem: Function,
+  addItemByTip: Function,
+  addItemByVenue: Function,
+  create: Function,
+  getByID: Function,
+  getByName: Function,
+  shareList: Function,
+} {
+  const core = coreLib(config);
+  const logger = core.getLogger('lists');
+  const logHelper = new LogHelper('Lists', logger);
 
   /**
    * Retrieve a list from Foursquare.
-   * @memberof module:node-foursquare/Lists
-   * @param {String} listId The id of the List to retrieve; accepts IDs such as 'self/tips' or 'USER_ID/todos'.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/lists/lists.html
    */
-  function getList(listId, accessToken, callback) {
-    logger.enter('getList');
+  function getByID(
+    listId: string,
+    accessToken: string,
+    callback: CallbackFunction
+  ) {
+    const method = 'get';
+    logger.enter(method);
 
-    if(!listId) {
-      logger.error('getList: listId is required.');
-      callback(new Error('Lists.getList: listId is required.'));
+    if (!logHelper.debugAndCheckParams({ listId }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
     core.callApi(path.join('/lists', listId), accessToken, null, callback);
   }
 
   /**
-   * Retrieve followers of a List from Foursquare.
-   * @memberof module:node-foursquare/Lists
-   * @param {String} listId The id of the List; accepts IDs such as 'self/tips' or 'USER_ID/todos'.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/lists/followers.html
+   * Retrieve a list from Foursquare using a list name and either the creator's
+   * name or user ID.
    */
-  function getFollowers(listId, accessToken, callback) {
-    logger.enter('getFollowers');
+  function getByName(
+    userNameOrId: string,
+    listName: string,
+    accessToken: string,
+    callback: CallbackFunction
+  ) {
+    const method = 'getByName';
 
-    if(!listId) {
-      logger.error('getFollowers: listId is required.');
-      callback(new Error('Lists.getFollowers: listId is required.'));
+    if (
+      !logHelper.debugAndCheckParams(
+        { userNameOrId, listName },
+        method,
+        callback
+      )
+    ) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    core.callApi(path.join('/lists', listId, 'followers'), accessToken, null, callback);
+    core.callApi(
+      path.join('/lists', userNameOrId, listName),
+      accessToken,
+      null,
+      callback
+    );
   }
 
   /**
-   * Retrieve venues suggested for a List from Foursquare.
-   * @memberof module:node-foursquare/Lists
-   * @param {String} listId The id of the List; accepts IDs such as 'self/tips' or 'USER_ID/todos'.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/lists/followers.html
+   * Create a list
    */
-  function getSuggestedVenues(listId, accessToken, callback) {
-    logger.enter('getSuggestedVenues');
+  function create(
+    name: string,
+    params?: {
+      description?: string,
+      collaborative?: boolean,
+      photoId?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) {
+    const method = 'create';
+    logger.enter(method);
 
-    if(!listId) {
-      logger.error('getSuggestedVenues: listId is required.');
-      callback(new Error('Lists.getSuggestedVenues: listId is required.'));
+    if (!logHelper.debugAndCheckParams({ name }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    core.callApi(path.join('/lists', listId, 'suggestvenues'), accessToken, null, callback);
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      '/lists/add',
+      accessToken,
+      {
+        name,
+        ...params,
+      },
+      callback
+    );
   }
 
   /**
-   * Retrieve venues suggested for an item in a List from Foursquare.
-   * @memberof module:node-foursquare/Lists
-   * @param {String} listId The id of the List; accepts IDs such as 'self/tips' or 'USER_ID/todos'.
-   * @param {String} itemId The id of an item in the List.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/lists/followers.html
+   * Add an item to a list by venue.
    */
-  function getSuggestedPhotos(listId, itemId, accessToken, callback) {
-    logger.enter('getSuggestedPhotos');
+  function addItemByVenue(
+    listId: string,
+    venueId: string,
+    params?: {
+      url?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) {
+    const method = 'addItemByVenue';
+    logger.enter(method);
 
-    if(!listId) {
-      logger.error('getSuggestedPhotos: listId is required.');
-      callback(new Error('Lists.getSuggestedPhotos: listId is required.'));
+    if (!logHelper.debugAndCheckParams({ listId, venueId }, method, callback)) {
       return;
     }
 
-    if(!itemId) {
-      logger.error('getSuggestedPhotos: itemId is required.');
-      callback(new Error('Lists.getSuggestedPhotos: itemId is required.'));
-      return;
-    }
+    logHelper.debugParams(params, method);
 
-    logger.debug('getList:listId: ' + listId);
-    logger.debug('getList:itemId: ' + itemId);
-    core.callApi(path.join('/lists', listId, 'suggestphoto'), accessToken, { 'itemId' : itemId }, callback);
+    core.postApi(
+      path.join('/lists', listId, 'additem'),
+      accessToken,
+      {
+        venueId,
+        ...params,
+      },
+      callback
+    );
   }
 
   /**
-   * Retrieve tips suggested for an item in a List from Foursquare.
-   * @memberof module:node-foursquare/Lists
-   * @param {String} listId The id of the List; accepts IDs such as 'self/tips' or 'USER_ID/todos'.
-   * @param {String} itemId The id of an item in the List.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/lists/followers.html
+   * Add an item to a list by tip.
    */
-  function getSuggestedTips(listId, itemId, accessToken, callback) {
-    logger.enter('getSuggestedTips');
+  function addItemByTip(
+    listId: string,
+    tipId: string,
+    params?: {
+      url?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) {
+    const method = 'addItemByTip';
+    logger.enter(method);
 
-    if(!listId) {
-      logger.error('getSuggestedTips: listId is required.');
-      callback(new Error('Lists.getSuggestedTips: listId is required.'));
+    if (!logHelper.debugAndCheckParams({ listId, tipId }, method, callback)) {
       return;
     }
 
-    if(!itemId) {
-      logger.error('getSuggestedTips: itemId is required.');
-      callback(new Error('Lists.getSuggestedTips: itemId is required.'));
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      path.join('/lists', listId, 'additem'),
+      accessToken,
+      {
+        tipId,
+        ...params,
+      },
+      callback
+    );
+  }
+
+  /**
+   * Add an item to a list.
+   */
+  function addItem(
+    listId: string,
+    itemId: string,
+    params?: {
+      url?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) {
+    const method = 'addItem';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ listId, itemId }, method, callback)) {
       return;
     }
 
-    logger.debug('getList:listId: ' + listId);
-    logger.debug('getList:itemId: ' + itemId);
-    core.callApi(path.join('/lists', listId, 'suggesttip'), accessToken, { 'itemId' : itemId }, callback);
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      path.join('/lists', listId, 'additem'),
+      accessToken,
+      {
+        itemId,
+        ...params,
+      },
+      callback
+    );
+  }
+
+  /**
+   * Add an item to a list.
+   */
+  function shareList(
+    listId: string,
+    broadcast: 'facebook' | 'twitter' | 'facebook,twitter',
+    params?: {
+      message?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) {
+    const method = 'shareList';
+    logger.enter(method);
+
+    if (
+      !logHelper.debugAndCheckParams({ listId, broadcast }, method, callback)
+    ) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      path.join('/lists', listId, 'additem'),
+      accessToken,
+      {
+        broadcast,
+        ...params,
+      },
+      callback
+    );
   }
 
   return {
-    'getList' : getList,
-    'getFollowers' : getFollowers,
-    'getSuggestedPhotos' : getSuggestedPhotos,
-    'getSuggestedTips' : getSuggestedTips,
-    'getSuggestedVenues' : getSuggestedVenues
-  }
+    addItem,
+    addItemByTip,
+    addItemByVenue,
+    create,
+    getByID,
+    getByName,
+    shareList,
+  };
 };

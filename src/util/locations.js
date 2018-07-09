@@ -17,20 +17,20 @@ export type LocationAPIParameters = {
   },
 };
 
-function isLocationParameterValid(location: ?LocationParameter): boolean {
+const isLocationParameterValid = (location: ?LocationParameter): boolean => {
   if (location) {
-    const {lat, long} = location;
-    return !((lat && !long) || (!lat && long));
+    const { lat, long } = location;
+    return !!lat && !!long;
   }
 
   return false;
-}
+};
 
-function createLocationAPIParameters(
-  location: ?LocationParameter,
-): ?LocationAPIParameters {
+const createLocationAPIParameters = (
+  location: ?LocationParameter
+): ?LocationAPIParameters => {
   if (location) {
-    const {accuracy, altitude, altitudeAccuracy, lat, long} = location;
+    const { accuracy, altitude, altitudeAccuracy, lat, long } = location;
 
     const locationParams: Object = {
       ll: `${lat},${long}`,
@@ -54,40 +54,38 @@ function createLocationAPIParameters(
   }
 
   return null;
-}
+};
 
-function getLocationAPIParameter(
-  params?: ?{
-    location?: LocationParameter,
-  },
-  method: string,
-  module: string,
-  logger: any,
-  callback: Function,
-): ?LocationAPIParameters {
-  if (!params) {
-    return null;
-  }
-
-  const {location} = params;
-
-  if (!location) {
-    return null;
-  }
-
-  if (!isLocationParameterValid(location)) {
-    logger.error(`${method}: location parameter is not valid.`);
-    callback(
-      new Error(`${module}.${method}: location parameter is not valid.`),
-    );
-    return null;
-  }
-
-  return createLocationAPIParameters(location);
-}
-
-module.exports = {
+export default {
   createLocationAPIParameters,
-  getLocationAPIParameter,
   isLocationParameterValid,
+  getLocationAPIParameter: (
+    params?: ?{
+      location?: LocationParameter,
+    },
+    method: string,
+    module: string,
+    logger: any,
+    callback: Function
+  ): ?LocationAPIParameters => {
+    if (!params) {
+      return null;
+    }
+
+    const { location } = params;
+
+    if (!location) {
+      return null;
+    }
+
+    if (!isLocationParameterValid(location)) {
+      logger.error(`${method}: location parameter is not valid.`);
+      callback(
+        new Error(`${module}.${method}: location parameter is not valid.`)
+      );
+      return null;
+    }
+
+    return createLocationAPIParameters(location);
+  },
 };

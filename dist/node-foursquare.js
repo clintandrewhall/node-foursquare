@@ -1,36 +1,37 @@
 'use strict';
 
-var qs = require('querystring'),
-    winstonLib = require('winston'),
-    defaultConfig = require('./config-default'),
-    mergeDeep = require('./util/mergeDeep'),
-    coreLib = require('./core'),
-    _require = require('./util/callbacks'),
-    empty = _require.empty,
-    users = require('./users'),
-    venues = require('./venues'),
-    checkins = require('./checkins'),
-    tips = require('./tips'),
-    lists = require('./lists'),
-    photos = require('./photos'),
-    settings = require('./settings'),
-    specials = require('./specials'),
-    updates = require('./updates'),
-    events = require('./events'),
-    version = '12122017';
+var _querystring = require('querystring'),
+    _querystring2 = _interopRequireDefault(_querystring),
+    _configDefault = require('./config-default'),
+    _configDefault2 = _interopRequireDefault(_configDefault),
+    _mergeDeep = require('./util/mergeDeep'),
+    _mergeDeep2 = _interopRequireDefault(_mergeDeep),
+    _core = require('./core'),
+    _core2 = _interopRequireDefault(_core),
+    _callbacks = require('./util/callbacks'),
+    _users = require('./users'),
+    _users2 = _interopRequireDefault(_users),
+    _venues = require('./venues'),
+    _venues2 = _interopRequireDefault(_venues),
+    _checkins = require('./checkins'),
+    _checkins2 = _interopRequireDefault(_checkins),
+    _tips = require('./tips'),
+    _tips2 = _interopRequireDefault(_tips),
+    _lists = require('./lists'),
+    _lists2 = _interopRequireDefault(_lists),
+    _photos = require('./photos'),
+    _photos2 = _interopRequireDefault(_photos);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var version = '12122017';
 
 module.exports = function () {
   var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-      config = mergeDeep(providedConfig || {}, defaultConfig),
-      winston = config.winston,
-      colors = winston.colors,
-      levels = winston.levels;
+      config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {}),
+      core = (0, _core2.default)(config),
+      logger = core.getLogger('all');
 
-
-  winstonLib.addColors(colors);
-
-  var logger = new winstonLib.Logger(winston);
-  logger.setLevels(levels);
 
   if (!config.secrets || !config.secrets.clientId || !config.secrets.clientSecret || !config.secrets.redirectUrl) {
     logger.error(`Client configuration not supplied; add config.secrets information,
@@ -55,16 +56,16 @@ module.exports = function () {
     logger.warn(`Foursquare API mode not defined in configuration; defaulting to: ${config.foursquare.mode}`);
   }
 
-  var core = coreLib(config),
-      foursquare = config.foursquare,
+  var foursquare = config.foursquare,
       secrets = config.secrets,
       clientId = secrets.clientId,
       clientSecret = secrets.clientSecret,
       redirectUrl = secrets.redirectUrl,
       accessTokenUrl = foursquare.accessTokenUrl,
       authenticateUrl = foursquare.authenticateUrl;
+
   function getAccessToken(providedParams) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : empty,
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _callbacks.empty,
         code = providedParams.code,
         params = {
       code,
@@ -75,7 +76,7 @@ module.exports = function () {
     };
 
 
-    core.retrieve(`${accessTokenUrl}?${qs.stringify(params)}`, function (error, status, result) {
+    core.retrieve(`${accessTokenUrl}?${_querystring2.default.stringify(params)}`, function (error, status, result) {
       if (error) {
         callback(error);
       } else {
@@ -97,20 +98,17 @@ module.exports = function () {
   }
 
   function getAuthClientRedirectUrl() {
-    return `${authenticateUrl}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUrl}`;
+    return `${authenticateUrl}?client_id=${clientId}&response_type=code
+      &redirect_uri=${redirectUrl}`;
   }
 
   return {
-    Users: users(config),
-    Venues: venues(config),
-    Checkins: checkins(config),
-    Tips: tips(config),
-    Lists: lists(config),
-    Photos: photos(config),
-    Settings: settings(config),
-    Specials: specials(config),
-    Updates: updates(config),
-    Events: events(config),
+    Users: (0, _users2.default)(config),
+    Venues: (0, _venues2.default)(config),
+    Checkins: (0, _checkins2.default)(config),
+    Tips: (0, _tips2.default)(config),
+    Lists: (0, _lists2.default)(config),
+    Photos: (0, _photos2.default)(config),
     getAccessToken,
     getAuthClientRedirectUrl
   };

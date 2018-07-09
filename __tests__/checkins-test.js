@@ -1,43 +1,81 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+const { env } = process;
+const {
+  ACCESS_TOKEN,
+  CLIENT_ID,
+  CLIENT_SECRET,
+  REDIRECT_URL,
+  TEST_CHECKIN,
+  TEST_SHORTCODE,
+  VERSION,
+} = env;
+
 let Foursquare = null;
-let accessToken = process.env.ACCESS_TOKEN;
 
 beforeAll(() => {
   Foursquare = require('./../dist/node-foursquare')({
     foursquare: {
       mode: 'foursquare',
-      version: process.env.VERSION,
+      version: VERSION,
     },
     secrets: {
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      redirectUrl: process.env.REDIRECT_URL,
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
+      redirectUrl: REDIRECT_URL,
     },
   });
 });
 
-test('Foursquare.Checkins.getCheckinDetails(502bcde16de4146b7f104ac6)', done => {
+test.skip('Foursquare.Checkins.add', () => {
+  // There's no way to test this without creating a new checkin every time, and
+  // there's no way to delete one once created.  CI would overload a person's
+  // profile.
+});
+
+test.skip('Foursquare.Checkins.addPost', () => {
+  // There's no way to test this without creating a new post every time, and
+  // there's no way to delete a post once created.  CI would overload a
+  // checkin with comments.
+});
+
+test('Foursquare.Checkins.getDetails(' + TEST_CHECKIN + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
     expect(data.checkin).toBeTruthy();
-    expect(data.checkin.id).toBe('502bcde16de4146b7f104ac6');
+    expect(data.checkin.id).toBe(TEST_CHECKIN);
     expect(data.checkin.type).toBe('checkin');
     done();
   };
 
-  Foursquare.Checkins.getCheckinDetails(
-    '502bcde16de4146b7f104ac6',
-    null,
-    accessToken,
-    callback
-  );
+  Foursquare.Checkins.getDetails(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
 });
 
-test('Foursquare.Checkins.getRecentCheckins()', done => {
+test('Foursquare.Checkins.like(' + TEST_CHECKIN + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
-    expect(data.recent).toBeTruthy();
+    expect(data.likes).toBeDefined();
+    expect(data.likes.count).toBeDefined();
+    expect(data.likes.groups).toBeDefined();
     done();
   };
 
-  Foursquare.Checkins.getRecentCheckins(null, accessToken, callback);
+  Foursquare.Checkins.like(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
+});
+
+test.skip('Foursquare.Checkins.resolve(' + TEST_SHORTCODE + ')', done => {
+  // I haven't been able to find a shortcode.
+});
+
+test('Foursquare.Checkins.unlike(' + TEST_CHECKIN + ')', done => {
+  const callback = (error, data) => {
+    expect(error).toBeNull();
+    expect(data.likes).toBeDefined();
+    expect(data.likes.count).toBeDefined();
+    expect(data.likes.groups).toBeDefined();
+    done();
+  };
+
+  Foursquare.Checkins.unlike(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
 });

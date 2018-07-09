@@ -1,5 +1,6 @@
 "use strict";
 
-module.exports = {
-  empty: function empty() {}
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var empty = exports.empty = function empty() {};

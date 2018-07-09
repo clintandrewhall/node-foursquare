@@ -1,70 +1,49 @@
 'use strict';
 
-var path = require('path'),
-    util = require('util');
+var _path = require('path'),
+    _path2 = _interopRequireDefault(_path),
+    _core = require('./core'),
+    _core2 = _interopRequireDefault(_core),
+    _callbacks = require('./util/callbacks'),
+    _logHelper = require('./util/logHelper'),
+    _logHelper2 = _interopRequireDefault(_logHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (config) {
-  var core = require('./core')(config),
-      logger = core.getLogger('tips');
+  var core = (0, _core2.default)(config),
+      logger = core.getLogger('tips'),
+      logHelper = new _logHelper2.default('Tips', logger),
+      getDetails = function getDetails(tipId, accessToken, callback) {
+    var method = 'getDetails';
+    logger.enter(method);
 
-  function getTip(tipId, accessToken, callback) {
-    logger.enter('getTip');
-
-    if (!tipId) {
-      logger.error('getTip: tipId is required.');
-      callback(new Error('Tips.getTip: tipId is required.'));
+    if (!logHelper.debugAndCheckParams({ tipId }, method, callback)) {
       return;
     }
 
-    logger.debug('getTip:tipId: ' + tipId);
-    core.callApi(path.join('/tips', tipId), accessToken, null, callback);
-  }
+    core.callApi(_path2.default.join('/tips', tipId), accessToken, null, callback);
+  },
+      add = function add(venueId, text) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
+        accessToken = arguments[3],
+        method = 'add';
 
-  function getLikes(tipId, accessToken, callback) {
-    logger.enter('getLikes');
+    logger.enter(method);
 
-    if (!tipId) {
-      logger.error('getLikes: tipId is required.');
-      callback(new Error('Tips.getLikes: tipId is required.'));
+    if (!logHelper.debugAndCheckParams({ venueId, text }, method, callback)) {
       return;
     }
 
-    logger.debug('getLikes:tipId: ' + tipId);
-    core.callApi(path.join('/tips', tipId, 'likes'), accessToken, null, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function getDone(tipId, params, accessToken, callback) {
-    logger.enter('getDone');
-    params = params || {};
+    core.postApi('/tips/add', accessToken, params, callback);
+  };
 
-    if (!tipId) {
-      logger.error('getDone: tipId is required.');
-      callback(new Error('Tips.getDone: tipId is required.'));
-      return;
-    }
-
-    logger.debug('getDone:tipId: ' + tipId);
-    core.callApi(path.join('/tips', tipId, 'done'), accessToken, params, callback);
-  }
-
-  function getListed(tipId, params, accessToken, callback) {
-    logger.enter('getLists');
-    params = params || {};
-
-    if (!tipId) {
-      logger.error('getLists: tipId is required.');
-      callback(new Error('Tips.getLists: tipId is required.'));
-      return;
-    }
-
-    logger.debug('getLists:tipId: ' + tipId);
-    core.callApi(path.join('/tips', tipId, 'listed'), accessToken, params, callback);
-  }
 
   return {
-    'getDone': getDone,
-    'getLikes': getLikes,
-    'getListed': getListed,
-    'getTip': getTip
+    add,
+    getDetails
   };
 };

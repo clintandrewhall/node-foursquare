@@ -19,37 +19,9 @@ var defaultConfig = {
     redirectUrl: ''
   },
   winston: {
-    transports: [new winston.transports.Console({
-      colorize: true,
-      level: 'enter',
-      name: 'console'
-    })],
-    levels: {
-      detail: 6,
-      trace: 5,
-      debug: 4,
-      enter: 3,
-      info: 2,
-      warn: 1,
-      error: 0
-    },
-    colors: {
-      debug: 'blue',
-      detail: 'grey',
-      enter: 'inverse',
-      error: 'red',
-      info: 'green',
-      trace: 'white',
-      warn: 'yellow'
-    },
-    loggers: {
-      default: {
-        console: {
-          colorize: true,
-          label: 'default',
-          level: 'none'
-        }
-      }
+    all: {
+      level: 'warn',
+      transports: [new winston.transports.Console()]
     }
   }
 };
