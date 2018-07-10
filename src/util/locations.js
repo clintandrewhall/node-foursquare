@@ -1,11 +1,14 @@
 /* @flow */
 
-export type LocationParameter = {
+export type LatLngParameter = {
+  lat: string,
+  long: string,
+};
+
+export type LocationParameter = LatLngParameter & {
   accuracy?: number,
   altitude?: number,
   altitudeAccuracy?: number,
-  lat: number,
-  long: number,
 };
 
 export type LocationAPIParameters = {

@@ -1,21 +1,31 @@
 'use strict';
 
-var _extends = Object.assign || function (target) { for (var i = 1, source; i < arguments.length; i++) { source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var _path = require('path'),
-    _path2 = _interopRequireDefault(_path),
-    _core = require('./core'),
-    _core2 = _interopRequireDefault(_core),
-    _callbacks = require('./util/callbacks'),
-    _logHelper = require('./util/logHelper'),
-    _logHelper2 = _interopRequireDefault(_logHelper);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _core = require('./core');
+
+var _core2 = _interopRequireDefault(_core);
+
+var _callbacks = require('./util/callbacks');
+
+var _logHelper = require('./util/logHelper');
+
+var _logHelper2 = _interopRequireDefault(_logHelper);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-module.exports = function (config) {
-  var core = (0, _core2.default)(config),
-      logger = core.getLogger('lists'),
-      logHelper = new _logHelper2.default('Lists', logger);
+exports.default = function (config) {
+  var core = (0, _core2.default)(config);
+  var logger = core.getLogger('lists');
+  var logHelper = new _logHelper2.default('Lists', logger);
 
   function getByID(listId, accessToken, callback) {
     var method = 'get';
@@ -39,11 +49,11 @@ module.exports = function (config) {
   }
 
   function create(name) {
-    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-        callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
-        accessToken = arguments[2],
-        method = 'create';
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty;
 
+    var method = 'create';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ name }, method, callback)) {
@@ -58,11 +68,11 @@ module.exports = function (config) {
   }
 
   function addItemByVenue(listId, venueId) {
-    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
-        accessToken = arguments[3],
-        method = 'addItemByVenue';
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty;
 
+    var method = 'addItemByVenue';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ listId, venueId }, method, callback)) {
@@ -77,11 +87,11 @@ module.exports = function (config) {
   }
 
   function addItemByTip(listId, tipId) {
-    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
-        accessToken = arguments[3],
-        method = 'addItemByTip';
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty;
 
+    var method = 'addItemByTip';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ listId, tipId }, method, callback)) {
@@ -96,11 +106,11 @@ module.exports = function (config) {
   }
 
   function addItem(listId, itemId) {
-    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
-        accessToken = arguments[3],
-        method = 'addItem';
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty;
 
+    var method = 'addItem';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ listId, itemId }, method, callback)) {
@@ -115,11 +125,11 @@ module.exports = function (config) {
   }
 
   function shareList(listId, broadcast) {
-    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-        callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty,
-        accessToken = arguments[3],
-        method = 'shareList';
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : _callbacks.empty;
 
+    var method = 'shareList';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ listId, broadcast }, method, callback)) {

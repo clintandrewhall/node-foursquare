@@ -37,4 +37,8 @@ casper.then(function clickAllow() {
   this.click('span#allowButton');
 });
 
+casper.then(function() {
+  this.exit();
+});
+
 casper.run();

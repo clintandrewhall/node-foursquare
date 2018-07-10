@@ -1,7 +1,10 @@
+/* @flow */
 import dotenv from 'dotenv';
 dotenv.config();
 
-const { env } = process;
+import { Foursquare } from './../src/node-foursquare';
+
+const env = ((process.env: any): { [string]: string });
 const {
   ACCESS_TOKEN,
   CLIENT_ID,
@@ -11,23 +14,19 @@ const {
   VERSION,
 } = env;
 
-let Foursquare = null;
-
-beforeAll(() => {
-  Foursquare = require('./../dist/node-foursquare')({
-    foursquare: {
-      mode: 'foursquare',
-      version: VERSION,
-    },
-    secrets: {
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
-      redirectUrl: REDIRECT_URL,
-    },
-  });
+const Tips = Foursquare.Tips({
+  foursquare: {
+    mode: 'foursquare',
+    version: VERSION,
+  },
+  secrets: {
+    clientId: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    redirectUrl: REDIRECT_URL,
+  },
 });
 
-test('Foursquare.Tips.getDetails(' + TEST_TIP_ID + ')', done => {
+test('Tips.getDetails(' + TEST_TIP_ID + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
     expect(data.tip).toBeTruthy();
@@ -35,10 +34,10 @@ test('Foursquare.Tips.getDetails(' + TEST_TIP_ID + ')', done => {
     done();
   };
 
-  Foursquare.Tips.getDetails(TEST_TIP_ID, ACCESS_TOKEN, callback);
+  Tips.getDetails(TEST_TIP_ID, ACCESS_TOKEN, callback);
 });
 
-test.skip('Foursquare.Tips.add', () => {
+test.skip('Tips.add', () => {
   // There's no way to test this without creating a new tip every time, and
   // there's no way to delete a tip once created.  CI would overload a
   // venue with tips.

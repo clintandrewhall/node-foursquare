@@ -8,12 +8,15 @@ import type { CallbackFunction } from './util/callbacks';
 
 import { empty } from './util/callbacks';
 import LogHelper from './util/logHelper';
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
 
 /**
  * A module for retrieving information about Tips from Foursquare.
  * @module node-foursquare/Tips
  */
-module.exports = function(config: FoursquareConfig) {
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
   const core = coreModule(config);
   const logger = core.getLogger('tips');
   const logHelper = new LogHelper('Tips', logger);
@@ -65,4 +68,4 @@ module.exports = function(config: FoursquareConfig) {
     add,
     getDetails,
   };
-};
+}

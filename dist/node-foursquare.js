@@ -1,37 +1,131 @@
 'use strict';
 
-var _querystring = require('querystring'),
-    _querystring2 = _interopRequireDefault(_querystring),
-    _configDefault = require('./config-default'),
-    _configDefault2 = _interopRequireDefault(_configDefault),
-    _mergeDeep = require('./util/mergeDeep'),
-    _mergeDeep2 = _interopRequireDefault(_mergeDeep),
-    _core = require('./core'),
-    _core2 = _interopRequireDefault(_core),
-    _callbacks = require('./util/callbacks'),
-    _users = require('./users'),
-    _users2 = _interopRequireDefault(_users),
-    _venues = require('./venues'),
-    _venues2 = _interopRequireDefault(_venues),
-    _checkins = require('./checkins'),
-    _checkins2 = _interopRequireDefault(_checkins),
-    _tips = require('./tips'),
-    _tips2 = _interopRequireDefault(_tips),
-    _lists = require('./lists'),
-    _lists2 = _interopRequireDefault(_lists),
-    _photos = require('./photos'),
-    _photos2 = _interopRequireDefault(_photos);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _querystring = require('querystring');
+
+var _querystring2 = _interopRequireDefault(_querystring);
+
+var _nodeFetch = require('node-fetch');
+
+var _nodeFetch2 = _interopRequireDefault(_nodeFetch);
+
+var _callbacks = require('./util/callbacks');
+
+var _core = require('./core');
+
+var _core2 = _interopRequireDefault(_core);
+
+var _configDefault = require('./config-default');
+
+var _configDefault2 = _interopRequireDefault(_configDefault);
+
+var _mergeDeep = require('./util/mergeDeep');
+
+var _mergeDeep2 = _interopRequireDefault(_mergeDeep);
+
+var _checkins = require('./checkins');
+
+var _checkins2 = _interopRequireDefault(_checkins);
+
+var _lists = require('./lists');
+
+var _lists2 = _interopRequireDefault(_lists);
+
+var _photos = require('./photos');
+
+var _photos2 = _interopRequireDefault(_photos);
+
+var _tips = require('./tips');
+
+var _tips2 = _interopRequireDefault(_tips);
+
+var _users = require('./users');
+
+var _users2 = _interopRequireDefault(_users);
+
+var _venues = require('./venues');
+
+var _venues2 = _interopRequireDefault(_venues);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var version = '12122017';
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-module.exports = function () {
-  var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-      config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {}),
-      core = (0, _core2.default)(config),
-      logger = core.getLogger('all');
+var version = '07102018';
 
+exports.default = function () {
+  var getAccessToken = function () {
+    var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(providedParams) {
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _callbacks.empty;
+      var code, params, response, ok, status, result, access_token;
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              code = providedParams.code;
+              params = {
+                code,
+                grant_type: providedParams.grant_type || 'authorization_code',
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: redirectUrl
+              };
+              _context.next = 4;
+              return (0, _nodeFetch2.default)(`${accessTokenUrl}?${_querystring2.default.stringify(params)}`);
+
+            case 4:
+              response = _context.sent;
+              ok = response.ok, status = response.status;
+              _context.next = 8;
+              return response.json();
+
+            case 8:
+              result = _context.sent;
+
+              if (!ok) {
+                _context.next = 16;
+                break;
+              }
+
+              access_token = result.access_token;
+
+              if (!access_token) {
+                _context.next = 14;
+                break;
+              }
+
+              callback(null, result.access_token);
+              return _context.abrupt('return');
+
+            case 14:
+              callback(new Error(`access_token not present, got ${result}`));
+              return _context.abrupt('return');
+
+            case 16:
+
+              callback(new Error(result.error));
+
+            case 17:
+            case 'end':
+              return _context.stop();
+          }
+        }
+      }, _callee, this);
+    }));
+
+    return function getAccessToken(_x2) {
+      return _ref.apply(this, arguments);
+    };
+  }();
+
+  var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  var config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {});
+  var core = (0, _core2.default)(config);
+  var logger = core.getLogger('all');
 
   if (!config.secrets || !config.secrets.clientId || !config.secrets.clientSecret || !config.secrets.redirectUrl) {
     logger.error(`Client configuration not supplied; add config.secrets information,
@@ -57,45 +151,12 @@ module.exports = function () {
   }
 
   var foursquare = config.foursquare,
-      secrets = config.secrets,
-      clientId = secrets.clientId,
+      secrets = config.secrets;
+  var clientId = secrets.clientId,
       clientSecret = secrets.clientSecret,
-      redirectUrl = secrets.redirectUrl,
-      accessTokenUrl = foursquare.accessTokenUrl,
+      redirectUrl = secrets.redirectUrl;
+  var accessTokenUrl = foursquare.accessTokenUrl,
       authenticateUrl = foursquare.authenticateUrl;
-
-  function getAccessToken(providedParams) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _callbacks.empty,
-        code = providedParams.code,
-        params = {
-      code,
-      grant_type: providedParams.grant_type || 'authorization_code',
-      client_id: clientId,
-      client_secret: clientSecret,
-      redirect_uri: redirectUrl
-    };
-
-
-    core.retrieve(`${accessTokenUrl}?${_querystring2.default.stringify(params)}`, function (error, status, result) {
-      if (error) {
-        callback(error);
-      } else {
-        try {
-          var resultObj = JSON.parse(result);
-
-          if (resultObj.error) {
-            callback(new Error(resultObj.error));
-          } else if (!resultObj.access_token) {
-            callback(new Error(`access_token not present, got ${result}`));
-          } else {
-            callback(null, resultObj.access_token);
-          }
-        } catch (e) {
-          callback(e);
-        }
-      }
-    });
-  }
 
   function getAuthClientRedirectUrl() {
     return `${authenticateUrl}?client_id=${clientId}&response_type=code

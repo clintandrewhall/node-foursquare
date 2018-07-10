@@ -3,8 +3,8 @@
 import type { CallbackFunction } from './callbacks';
 
 export default class LogHelper {
-  constructor(module: string, logger: winstonLogger) {
-    this.module = module;
+  constructor(moduleName: string, logger: winstonLogger) {
+    this.moduleName = moduleName;
     this.logger = logger;
   }
 
@@ -16,7 +16,9 @@ export default class LogHelper {
     for (const key in params) {
       if (!params[key]) {
         this.logger.error(`${method}: ${key} is required.`);
-        callback(new Error(`${this.module}.${method}: ${key} is required.`));
+        callback(
+          new Error(`${this.moduleName}.${method}: ${key} is required.`)
+        );
         return false;
       }
     }
@@ -29,9 +31,9 @@ export default class LogHelper {
       if (debug.length > 0) {
         debug += ',';
       }
-      debug += `${key}={params[key]}`;
+      debug += `${key}=${JSON.stringify(params[key])}`;
     }
-    this.logger.debug(`${module}:${method}:${debug}`);
+    this.logger.debug(`${this.moduleName}.${method} => ${debug}`);
   }
 
   debugAndCheckParams(

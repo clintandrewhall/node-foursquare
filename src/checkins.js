@@ -10,22 +10,15 @@ import type { CallbackFunction } from './util/callbacks';
 import type { LocationParameter } from './util/locations';
 
 import { empty } from './util/callbacks';
+import defaultConfig from './config-default';
 import LogHelper from './util/logHelper';
-
+import mergeDeep from './util/mergeDeep';
 /**
  * A module for retrieving information about Checkins from Foursquare.
  * @module node-foursquare/Checkins
  */
-export default (
-  config: FoursquareConfig
-): {
-  add: Function,
-  addPost: Function,
-  getDetails: Function,
-  like: Function,
-  resolve: Function,
-  unlike: Function,
-} => {
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
   const core = coreModule(config);
   const logger = core.getLogger('checkins');
   const logHelper = new LogHelper('Checkins', logger);
@@ -40,7 +33,7 @@ export default (
       location?: LocationParameter,
       mentions?: Array<string>,
       shout?: string,
-    },
+    } = {},
     accessToken: string,
     callback: CallbackFunction = empty
   ) => {
@@ -199,4 +192,4 @@ export default (
     resolve,
     unlike,
   };
-};
+}

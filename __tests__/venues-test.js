@@ -4,17 +4,18 @@ dotenv.config();
 
 import { Foursquare } from './../src/node-foursquare';
 
-const env = ((process.env: any): { [string]: string });
+const { env } = process;
 const {
   ACCESS_TOKEN,
   CLIENT_ID,
   CLIENT_SECRET,
   REDIRECT_URL,
-  TEST_PHOTO_ID,
+  TEST_USER_ID,
+  TEST_VENUES_USER_ID,
   VERSION,
 } = env;
 
-const Photos = Foursquare.Photos({
+const Venues = Foursquare.Venues({
   foursquare: {
     mode: 'foursquare',
     version: VERSION,
@@ -24,15 +25,26 @@ const Photos = Foursquare.Photos({
     clientSecret: CLIENT_SECRET,
     redirectUrl: REDIRECT_URL,
   },
+  winston: {
+    all: {
+      level: 'debug',
+    },
+  },
 });
 
-test('Photos.get(' + TEST_PHOTO_ID + ')', done => {
+test('Foursquare.Venues.browseBox', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
-    expect(data.photo).toBeTruthy();
-    expect(data.photo.id).toBe(TEST_PHOTO_ID);
+    expect(data).toBeDefined();
+    expect(data.venues).toBeArray();
     done();
   };
 
-  Photos.get(TEST_PHOTO_ID, null, ACCESS_TOKEN, callback);
+  Venues.browseBox(
+    { lat: '39.063281', long: '-94.566989' },
+    { lat: '39.028485', long: '-94.607845' },
+    null,
+    ACCESS_TOKEN,
+    callback
+  );
 });

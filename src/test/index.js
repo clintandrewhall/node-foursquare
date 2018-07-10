@@ -1,7 +1,9 @@
 /* @flow */
-const express = require('express');
-const jest = require('jest');
-const nodeFoursquare = require('./../node-foursquare');
+require('babel-polyfill');
+import express from 'express';
+import jest from 'jest';
+
+import nodeFoursquare from './../node-foursquare';
 
 require('dotenv').config();
 
@@ -60,23 +62,21 @@ app.get('/test', (req: express$Request, res: express$Response) => {
   );
 
   const { runCLI } = jest;
-  runCLI({}, [__dirname]).then(() => {
+  runCLI({}, [__dirname], 'users-test').then(() => {
     process.exit();
   });
 });
 
-app.listen(3000, () => {
+const server = app.listen(3000, () => {
   const spawn = require('child_process').spawn;
   const casper = spawn('npm', ['run', 'test-casper']);
   casper.stdout.pipe(process.stdout);
 
   casper.on('error', function() {
-    // $FlowFixMe$ The express definition does not include server.close
-    app.close();
+    server && server.close();
   });
 
   casper.on('close', function() {
-    // $FlowFixMe$ The express definition does not include server.close
-    app.close();
+    server && server.close();
   });
 });

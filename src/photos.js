@@ -7,15 +7,15 @@ import LogHelper from './util/logHelper';
 import type { FoursquareConfig } from './config-default';
 import type { CallbackFunction } from './util/callbacks';
 
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
+
 /**
  * A module for retrieving information about Photos from Foursquare.
  * @module node-foursquare/Photos
  */
-module.exports = function(
-  config: FoursquareConfig
-): {
-  get: Function,
-} {
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
   const core = coreLib(config);
   const logger = core.getLogger('photos');
   const logHelper = new LogHelper('Photos', logger);
@@ -44,4 +44,4 @@ module.exports = function(
   return {
     get,
   };
-};
+}

@@ -1,9 +1,9 @@
 /* @flow */
 
-export type CallbackFunction = (error: ?Object, results?: ?any) => void;
+export type CallbackFunction = (error: ?Object, results: any) => void;
 export type ServerCallbackFunction = (
   error: ?Error,
-  statusCode?: number,
+  statusCode: number,
   results?: any
 ) => void;
 

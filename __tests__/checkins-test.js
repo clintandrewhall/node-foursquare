@@ -1,7 +1,10 @@
+/* @flow */
 import dotenv from 'dotenv';
 dotenv.config();
 
-const { env } = process;
+import { Foursquare } from './../src/node-foursquare';
+
+const env = ((process.env: any): { [string]: string });
 const {
   ACCESS_TOKEN,
   CLIENT_ID,
@@ -12,35 +15,31 @@ const {
   VERSION,
 } = env;
 
-let Foursquare = null;
-
-beforeAll(() => {
-  Foursquare = require('./../dist/node-foursquare')({
-    foursquare: {
-      mode: 'foursquare',
-      version: VERSION,
-    },
-    secrets: {
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
-      redirectUrl: REDIRECT_URL,
-    },
-  });
+const Checkins = Foursquare.Checkins({
+  foursquare: {
+    mode: 'foursquare',
+    version: VERSION,
+  },
+  secrets: {
+    clientId: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    redirectUrl: REDIRECT_URL,
+  },
 });
 
-test.skip('Foursquare.Checkins.add', () => {
+test.skip('Checkins.add', () => {
   // There's no way to test this without creating a new checkin every time, and
   // there's no way to delete one once created.  CI would overload a person's
   // profile.
 });
 
-test.skip('Foursquare.Checkins.addPost', () => {
+test.skip('Checkins.addPost', () => {
   // There's no way to test this without creating a new post every time, and
   // there's no way to delete a post once created.  CI would overload a
   // checkin with comments.
 });
 
-test('Foursquare.Checkins.getDetails(' + TEST_CHECKIN + ')', done => {
+test('Checkins.getDetails(' + TEST_CHECKIN + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
     expect(data.checkin).toBeTruthy();
@@ -49,10 +48,10 @@ test('Foursquare.Checkins.getDetails(' + TEST_CHECKIN + ')', done => {
     done();
   };
 
-  Foursquare.Checkins.getDetails(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
+  Checkins.getDetails(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
 });
 
-test('Foursquare.Checkins.like(' + TEST_CHECKIN + ')', done => {
+test('Checkins.like(' + TEST_CHECKIN + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
     expect(data.likes).toBeDefined();
@@ -61,14 +60,14 @@ test('Foursquare.Checkins.like(' + TEST_CHECKIN + ')', done => {
     done();
   };
 
-  Foursquare.Checkins.like(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
+  Checkins.like(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
 });
 
-test.skip('Foursquare.Checkins.resolve(' + TEST_SHORTCODE + ')', done => {
+test.skip('Checkins.resolve(' + (TEST_SHORTCODE || '') + ')', done => {
   // I haven't been able to find a shortcode.
 });
 
-test('Foursquare.Checkins.unlike(' + TEST_CHECKIN + ')', done => {
+test('Checkins.unlike(' + (TEST_CHECKIN || '') + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
     expect(data.likes).toBeDefined();
@@ -77,5 +76,5 @@ test('Foursquare.Checkins.unlike(' + TEST_CHECKIN + ')', done => {
     done();
   };
 
-  Foursquare.Checkins.unlike(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
+  Checkins.unlike(TEST_CHECKIN, null, ACCESS_TOKEN, callback);
 });

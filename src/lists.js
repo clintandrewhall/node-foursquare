@@ -8,22 +8,15 @@ import type { CallbackFunction } from './util/callbacks';
 
 import { empty } from './util/callbacks';
 import LogHelper from './util/logHelper';
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
 
 /**
  * A module for retrieving information about Lists from Foursquare.
  * @module node-foursquare/Lists
  */
-module.exports = function(
-  config: FoursquareConfig
-): {
-  addItem: Function,
-  addItemByTip: Function,
-  addItemByVenue: Function,
-  create: Function,
-  getByID: Function,
-  getByName: Function,
-  shareList: Function,
-} {
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
   const core = coreLib(config);
   const logger = core.getLogger('lists');
   const logHelper = new LogHelper('Lists', logger);
@@ -248,4 +241,4 @@ module.exports = function(
     getByName,
     shareList,
   };
-};
+}

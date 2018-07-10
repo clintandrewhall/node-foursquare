@@ -8,12 +8,14 @@ import type { FoursquareConfig, WinstonLoggerName } from './config-default';
 
 import qs from 'querystring';
 import util from 'util';
-import https from 'https';
 import urlParser from 'url';
 import winstonLib from 'winston';
 import EventEmitter from 'events';
+import request from 'request';
 
 import { empty } from './util/callbacks';
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
 
 const { format } = winstonLib;
 const { combine, colorize, timestamp, label, printf } = format;
@@ -28,7 +30,7 @@ const levels: $winstonLevels = {
   error: 0,
 };
 
-// $FlowFixMe$
+// $FlowFixMe$ Winston library definition incorrect
 winstonLib.addColors({
   debug: 'blue',
   detail: 'grey',
@@ -40,28 +42,19 @@ winstonLib.addColors({
 });
 
 const loggerFormat = printf(info => {
-  // $FlowFixMe$ Winston library incorrect
+  // $FlowFixMe$ Winston library definition incorrect
   return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
 });
 
 /**
  * Construct the Core module.
- * @param {Object} config A valid configuration.
  */
-module.exports = (
-  config: FoursquareConfig
-): {
-  getLogger: Function,
-  retrieve: Function,
-  invokeApi: Function,
-  extract: Function,
-  callApi: Function,
-  postApi: Function,
-} => {
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
   const { secrets, winston } = config;
   const { clientId, clientSecret } = secrets;
 
-  function getLogger(name: WinstonLoggerName): any {
+  const getLogger = (name: WinstonLoggerName): any => {
     // In order to avoid emitter leak warnings, and not affect the global
     // setting or outer warnings, I'm setting the defaultMaxListeners before
     // and after creating a new logger.
@@ -70,15 +63,17 @@ module.exports = (
     if (!winstonLib.loggers.has(name)) {
       // $FlowFixMe$ Flow isn't up-to-date on defaultMaxListeners
       const maxListeners = EventEmitter.defaultMaxListeners;
+
       // $FlowFixMe$ Flow isn't up-to-date on defaultMaxListeners
       EventEmitter.defaultMaxListeners = Infinity;
       winstonLib.loggers.add(name, getLoggerSettings(name));
+
       // $FlowFixMe$ Flow isn't up-to-date on defaultMaxListeners
       EventEmitter.defaultMaxListeners = maxListeners;
     }
 
     return winstonLib.loggers.get(name);
-  }
+  };
 
   const logger = getLogger('core');
 
@@ -106,64 +101,12 @@ module.exports = (
     };
   }
 
-  function retrieve(
+  const invokeApi = (
     url: string,
+    accessToken: ?string,
     callback: ServerCallbackFunction = empty,
     method: 'POST' | 'GET' = 'GET'
-  ) {
-    const parsedURL = urlParser.parse(url, true);
-    const { hostname, protocol } = parsedURL;
-    let { pathname, port, query } = parsedURL;
-    let result = '';
-    let request = null;
-
-    if (protocol === 'https:' && !port) {
-      port = '443';
-    }
-
-    query = query || {};
-    pathname = pathname || '';
-
-    const path = `${pathname}?${qs.stringify(query)}`;
-    const locale = config.locale || 'en';
-
-    logger.debug(`retrieve: Request path: ${path}`);
-
-    request = https.request(
-      {
-        host: hostname,
-        port,
-        path,
-        method,
-        headers: {
-          'Content-Length': 0,
-          'Accept-Language': locale,
-        },
-      },
-      res => {
-        res.on('data', chunk => {
-          result += chunk;
-        });
-        res.on('end', () => {
-          callback(null, res.statusCode, result);
-        });
-      }
-    );
-
-    request.on('error', error => {
-      logger.error(`retrieve: Error calling remote host: ${error.message}`);
-      callback(error);
-    });
-
-    request.end();
-  }
-
-  function invokeApi(
-    url: string,
-    accessToken: string,
-    callback: ServerCallbackFunction = empty,
-    method: 'POST' | 'GET' = 'GET'
-  ) {
+  ) => {
     const parsedURL = urlParser.parse(url, true);
     let { query } = parsedURL;
     query = query || {};
@@ -183,24 +126,24 @@ module.exports = (
     parsedURL.query = query;
     const newURL = urlParser.format(parsedURL);
 
-    retrieve(
-      newURL,
-      (error, status, result) => {
-        if (error) {
-          callback(error);
-        } else {
-          logger.trace(`invokeApi: Result: ${util.inspect(result)}`);
-          callback(null, status, result);
-        }
-      },
-      method
-    );
-  }
+    const requestFunction = method === 'POST' ? request.post : request.get;
+
+    requestFunction(newURL, (error, response, body) => {
+      const { statusCode } = response;
+
+      if (error) {
+        callback(error, statusCode);
+      } else {
+        logger.trace(`invokeApi: Result: ${util.inspect(body)}`);
+        callback(null, statusCode, body);
+      }
+    });
+  };
 
   function extract(
     url: string,
-    status,
-    result,
+    status: number,
+    result: string = '',
     callback: CallbackFunction = empty
   ) {
     let json = null;
@@ -282,8 +225,8 @@ module.exports = (
 
   function callApi(
     path: string,
-    accessToken: string,
-    params: Object,
+    accessToken: ?string,
+    params: ?Object = {},
     callback: CallbackFunction = empty,
     method: 'GET' | 'POST' = 'GET'
   ): void {
@@ -318,23 +261,25 @@ module.exports = (
     invokeApi(
       url,
       accessToken,
-      (error, status, result) => {
+      (error, status, result = '') => {
         extract(url, status, result, callback);
       },
       method
     );
   }
 
-  function postApi(path, accessToken, params, callback) {
+  function postApi(
+    path: string,
+    accessToken: ?string,
+    params: ?{} = {},
+    callback: CallbackFunction
+  ) {
     callApi(path, accessToken, params, callback, 'POST');
   }
 
   return {
     getLogger,
-    retrieve,
-    invokeApi,
-    extract,
     callApi,
     postApi,
   };
-};
+}

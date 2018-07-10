@@ -14,18 +14,20 @@ var isLocationParameterValid = function isLocationParameterValid(location) {
   }
 
   return false;
-},
-    createLocationAPIParameters = function createLocationAPIParameters(location) {
+};
+
+var createLocationAPIParameters = function createLocationAPIParameters(location) {
   if (location) {
     var _accuracy = location.accuracy,
         _altitude = location.altitude,
         _altitudeAccuracy = location.altitudeAccuracy,
         _lat2 = location.lat,
-        _long2 = location.long,
-        locationParams = {
+        _long2 = location.long;
+
+
+    var locationParams = {
       ll: `${_lat2},${_long2}`
     };
-
 
     if (_accuracy) {
       locationParams.llAcc = _accuracy;

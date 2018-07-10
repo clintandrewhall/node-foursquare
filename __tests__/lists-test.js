@@ -3,7 +3,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const { env } = process;
+import { Foursquare } from './../src/node-foursquare';
+
+const env = ((process.env: any): { [string]: string });
 const {
   ACCESS_TOKEN,
   CLIENT_ID,
@@ -16,23 +18,19 @@ const {
   VERSION,
 } = env;
 
-let Foursquare = {};
-
-beforeAll(() => {
-  Foursquare = require('./../dist/node-foursquare')({
-    foursquare: {
-      mode: 'foursquare',
-      version: VERSION,
-    },
-    secrets: {
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
-      redirectUrl: REDIRECT_URL,
-    },
-  });
+const Lists = Foursquare.Lists({
+  foursquare: {
+    mode: 'foursquare',
+    version: VERSION,
+  },
+  secrets: {
+    clientId: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    redirectUrl: REDIRECT_URL,
+  },
 });
 
-test('Foursquare.Lists.getByID(' + (TEST_LIST_ID || '') + ')', done => {
+test('Lists.getByID(' + TEST_LIST_ID + ')', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();
     expect(data.list).toBeDefined();
@@ -40,15 +38,11 @@ test('Foursquare.Lists.getByID(' + (TEST_LIST_ID || '') + ')', done => {
     done();
   };
 
-  Foursquare.Lists.getByID(TEST_LIST_ID, ACCESS_TOKEN, callback);
+  Lists.getByID(TEST_LIST_ID, ACCESS_TOKEN, callback);
 });
 
 test(
-  'Foursquare.Lists.getByName(' +
-    (TEST_LIST_USER_NAME || '') +
-    ', ' +
-    (TEST_LIST_NAME || '') +
-    ')',
+  'Lists.getByName(' + TEST_LIST_USER_NAME + ', ' + TEST_LIST_NAME + ')',
   done => {
     const callback = (error, data) => {
       expect(error).toBeNull();
@@ -59,7 +53,7 @@ test(
       done();
     };
 
-    Foursquare.Lists.getByName(
+    Lists.getByName(
       TEST_LIST_USER_NAME,
       TEST_LIST_NAME,
       ACCESS_TOKEN,
@@ -69,11 +63,7 @@ test(
 );
 
 test(
-  'Foursquare.Lists.getByName(' +
-    (TEST_LIST_USER_ID || '') +
-    ', ' +
-    (TEST_LIST_NAME || '') +
-    ')',
+  'Lists.getByName(' + TEST_LIST_USER_ID + ', ' + TEST_LIST_NAME + ')',
   done => {
     const callback = (error, data) => {
       expect(error).toBeNull();
@@ -84,39 +74,34 @@ test(
       done();
     };
 
-    Foursquare.Lists.getByName(
-      TEST_LIST_USER_ID,
-      TEST_LIST_NAME,
-      ACCESS_TOKEN,
-      callback
-    );
+    Lists.getByName(TEST_LIST_USER_ID, TEST_LIST_NAME, ACCESS_TOKEN, callback);
   }
 );
 
-test.skip('Foursquare.Lists.addItem', () => {
+test.skip('Lists.addItem', () => {
   // There's no way to test this without creating a new item every time, and
   // there's no way to delete an item once created.  CI would overload a
   // list with items.
 });
 
-test.skip('Foursquare.Lists.create', () => {
+test.skip('Lists.create', () => {
   // There's no way to test this without creating a new list every time, and
   // there's no way to delete a list once created.  CI would overload a
   // profile with lists.
 });
 
-test.skip('Foursquare.Lists.addItemByVenue', () => {
+test.skip('Lists.addItemByVenue', () => {
   // There's no way to test this without creating a new item every time, and
   // there's no way to delete an item once created.  CI would overload a
   // list with items.
 });
 
-test.skip('Foursquare.Lists.addItemByTip', () => {
+test.skip('Lists.addItemByTip', () => {
   // There's no way to test this without creating a new item every time, and
   // there's no way to delete an item once created.  CI would overload a
   // list with items.
 });
 
-test.skip('Foursquare.Lists.shareList', () => {
+test.skip('Lists.shareList', () => {
   // There's no way to test this without sharing a list every time.
 });

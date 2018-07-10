@@ -6,25 +6,36 @@
  * @author Clint Andrew Hall
  * @description A NodeJS module for interacting with Foursquare.
  */
+import type { FoursquareConfig } from './config-default';
 import type { CallbackFunction } from './util/callbacks';
 
 import qs from 'querystring';
+import fetch from 'node-fetch';
 
+import { empty } from './util/callbacks';
+import coreLib from './core';
 import defaultConfig from './config-default';
 import mergeDeep from './util/mergeDeep';
-import coreLib from './core';
-import { empty } from './util/callbacks';
 
-import users from './users';
-import venues from './venues';
 import checkins from './checkins';
-import tips from './tips';
 import lists from './lists';
 import photos from './photos';
+import tips from './tips';
+import users from './users';
+import venues from './venues';
 
-const version = '12122017';
+const version = '07102018';
 
-module.exports = (providedConfig: ?Object = {}) => {
+export const Foursquare = {
+  Checkins: checkins,
+  Lists: lists,
+  Photos: photos,
+  Tips: tips,
+  Users: users,
+  Venues: venues,
+};
+
+export default (providedConfig: Object | FoursquareConfig = {}) => {
   const config = mergeDeep(defaultConfig, providedConfig || {});
   const core = coreLib(config);
   const logger = core.getLogger('all');
@@ -77,13 +88,13 @@ module.exports = (providedConfig: ?Object = {}) => {
    * Exchange a user authorization code for an access token.
    * @memberof module:node-foursquare
    */
-  function getAccessToken(
+  async function getAccessToken(
     providedParams: {
       code: string,
       grant_type?: ?string,
     },
     callback: CallbackFunction = empty
-  ): void {
+  ): Promise<void> {
     const { code } = providedParams;
     const params = {
       code,
@@ -93,34 +104,26 @@ module.exports = (providedConfig: ?Object = {}) => {
       redirect_uri: redirectUrl,
     };
 
-    core.retrieve(
-      `${accessTokenUrl}?${qs.stringify(params)}`,
-      (error, status, result) => {
-        if (error) {
-          callback(error);
-        } else {
-          try {
-            const resultObj = JSON.parse(result);
+    const response = await fetch(`${accessTokenUrl}?${qs.stringify(params)}`);
+    const { ok } = response;
+    const result = await response.json();
 
-            if (resultObj.error) {
-              callback(new Error(resultObj.error));
-            } else if (!resultObj.access_token) {
-              callback(new Error(`access_token not present, got ${result}`));
-            } else {
-              callback(null, resultObj.access_token);
-            }
-          } catch (e) {
-            callback(e);
-          }
-        }
+    if (ok) {
+      const { access_token } = result;
+      if (access_token) {
+        callback(null, result.access_token);
+        return;
       }
-    );
+      callback(new Error(`access_token not present, got ${result}`));
+      return;
+    }
+
+    callback(new Error(result.error));
   }
 
   /**
    * Build and return an appropriate Authorization URL where the user can grant
    * permission to the application.
-   * @memberof module:node-foursquare
    */
   function getAuthClientRedirectUrl(): string {
     return `${authenticateUrl}?client_id=${clientId}&response_type=code

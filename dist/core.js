@@ -1,30 +1,48 @@
 'use strict';
 
-var _extends = Object.assign || function (target) { for (var i = 1, source; i < arguments.length; i++) { source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var _querystring = require('querystring'),
-    _querystring2 = _interopRequireDefault(_querystring),
-    _util = require('util'),
-    _util2 = _interopRequireDefault(_util),
-    _https = require('https'),
-    _https2 = _interopRequireDefault(_https),
-    _url = require('url'),
-    _url2 = _interopRequireDefault(_url),
-    _winston = require('winston'),
-    _winston2 = _interopRequireDefault(_winston),
-    _events = require('events'),
-    _events2 = _interopRequireDefault(_events),
-    _callbacks = require('./util/callbacks');
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _querystring = require('querystring');
+
+var _querystring2 = _interopRequireDefault(_querystring);
+
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
+
+var _url = require('url');
+
+var _url2 = _interopRequireDefault(_url);
+
+var _winston = require('winston');
+
+var _winston2 = _interopRequireDefault(_winston);
+
+var _events = require('events');
+
+var _events2 = _interopRequireDefault(_events);
+
+var _request = require('request');
+
+var _request2 = _interopRequireDefault(_request);
+
+var _callbacks = require('./util/callbacks');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var format = _winston2.default.format,
-    combine = format.combine,
+var format = _winston2.default.format;
+var combine = format.combine,
     colorize = format.colorize,
     timestamp = format.timestamp,
     label = format.label,
-    printf = format.printf,
-    levels = {
+    printf = format.printf;
+
+
+var levels = {
   detail: 6,
   trace: 5,
   debug: 4,
@@ -33,6 +51,7 @@ var format = _winston2.default.format,
   warn: 1,
   error: 0
 };
+
 _winston2.default.addColors({
   debug: 'blue',
   detail: 'grey',
@@ -47,14 +66,14 @@ var loggerFormat = printf(function (info) {
   return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
 });
 
-module.exports = function (config) {
+exports.default = function (config) {
   var secrets = config.secrets,
-      winston = config.winston,
-      clientId = secrets.clientId,
+      winston = config.winston;
+  var clientId = secrets.clientId,
       clientSecret = secrets.clientSecret;
 
 
-  function getLogger(name) {
+  var getLogger = function getLogger(name) {
     if (!_winston2.default.loggers.has(name)) {
       var maxListeners = _events2.default.defaultMaxListeners;
 
@@ -65,7 +84,7 @@ module.exports = function (config) {
     }
 
     return _winston2.default.loggers.get(name);
-  }
+  };
 
   var logger = getLogger('core');
 
@@ -73,8 +92,9 @@ module.exports = function (config) {
     var allConfig = winston['all'] || {
       level: 'warn',
       transports: [new _winston2.default.transports.Console()]
-    },
-        _ref = winston[name] || allConfig,
+    };
+
+    var _ref = winston[name] || allConfig,
         transports = _ref.transports,
         level = _ref.level;
 
@@ -86,62 +106,12 @@ module.exports = function (config) {
     };
   }
 
-  function retrieve(url) {
-    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _callbacks.empty,
-        method = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'GET',
-        parsedURL = _url2.default.parse(url, true),
-        hostname = parsedURL.hostname,
-        protocol = parsedURL.protocol,
-        pathname = parsedURL.pathname,
-        port = parsedURL.port,
-        query = parsedURL.query,
-        result = '',
-        request = null;
+  var invokeApi = function invokeApi(url, accessToken) {
+    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _callbacks.empty;
+    var method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'GET';
 
-    if (protocol === 'https:' && !port) {
-      port = '443';
-    }
-
-    query = query || {};
-    pathname = pathname || '';
-
-    var path = `${pathname}?${_querystring2.default.stringify(query)}`,
-        locale = config.locale || 'en';
-
-
-    logger.debug(`retrieve: Request path: ${path}`);
-
-    request = _https2.default.request({
-      host: hostname,
-      port,
-      path,
-      method,
-      headers: {
-        'Content-Length': 0,
-        'Accept-Language': locale
-      }
-    }, function (res) {
-      res.on('data', function (chunk) {
-        result += chunk;
-      });
-      res.on('end', function () {
-        callback(null, res.statusCode, result);
-      });
-    });
-
-    request.on('error', function (error) {
-      logger.error(`retrieve: Error calling remote host: ${error.message}`);
-      callback(error);
-    });
-
-    request.end();
-  }
-
-  function invokeApi(url, accessToken) {
-    var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _callbacks.empty,
-        method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'GET',
-        parsedURL = _url2.default.parse(url, true),
-        query = parsedURL.query;
+    var parsedURL = _url2.default.parse(url, true);
+    var query = parsedURL.query;
 
     query = query || {};
 
@@ -160,20 +130,26 @@ module.exports = function (config) {
     parsedURL.query = query;
     var newURL = _url2.default.format(parsedURL);
 
-    retrieve(newURL, function (error, status, result) {
+    var requestFunction = method === 'POST' ? _request2.default.post : _request2.default.get;
+
+    requestFunction(newURL, function (error, response, body) {
+      var statusCode = response.statusCode;
+
+
       if (error) {
-        callback(error);
+        callback(error, statusCode);
       } else {
-        logger.trace(`invokeApi: Result: ${_util2.default.inspect(result)}`);
-        callback(null, status, result);
+        logger.trace(`invokeApi: Result: ${_util2.default.inspect(body)}`);
+        callback(null, statusCode, body);
       }
-    }, method);
-  }
+    });
+  };
 
-  function extract(url, status, result) {
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
-        json = null;
+  function extract(url, status) {
+    var result = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty;
 
+    var json = null;
 
     if (!status || !result) {
       logger.error(`There was an unexpected, fatal error calling Foursquare: the response
@@ -252,11 +228,13 @@ module.exports = function (config) {
     callback(null, response || {});
   }
 
-  function callApi(path, accessToken, params) {
-    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty,
-        method = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'GET',
-        url = config.foursquare.apiUrl + path,
-        queryParams = _extends({}, params);
+  function callApi(path, accessToken) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty;
+    var method = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'GET';
+
+    var url = config.foursquare.apiUrl + path;
+    var queryParams = _extends({}, params);
 
     if (queryParams) {
       if (queryParams.lat && !queryParams.lng || !queryParams.lat && queryParams.lng) {
@@ -276,20 +254,22 @@ module.exports = function (config) {
 
     logger.trace(`callApi: Request URL: ${url}`);
 
-    invokeApi(url, accessToken, function (error, status, result) {
+    invokeApi(url, accessToken, function (error, status) {
+      var result = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+
       extract(url, status, result, callback);
     }, method);
   }
 
-  function postApi(path, accessToken, params, callback) {
+  function postApi(path, accessToken) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var callback = arguments[3];
+
     callApi(path, accessToken, params, callback, 'POST');
   }
 
   return {
     getLogger,
-    retrieve,
-    invokeApi,
-    extract,
     callApi,
     postApi
   };

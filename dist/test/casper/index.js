@@ -1,9 +1,9 @@
 'use strict';
 
-var casper = require('casper').create(),
-    env = require('system').env,
-    url = 'https://foursquare.com/oauth2/authenticate?client_id=' + env.CLIENT_ID + '&response_type=code&redirect_uri=' + env.REDIRECT_URL;
+var casper = require('casper').create();
+var env = require('system').env;
 
+var url = 'https://foursquare.com/oauth2/authenticate?client_id=' + env.CLIENT_ID + '&response_type=code&redirect_uri=' + env.REDIRECT_URL;
 
 casper.start(url);
 
@@ -28,6 +28,10 @@ casper.then(function waitForResponseForm() {
 casper.then(function clickAllow() {
   this.echo('...allowing access.');
   this.click('span#allowButton');
+});
+
+casper.then(function () {
+  this.exit();
 });
 
 casper.run();

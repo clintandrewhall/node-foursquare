@@ -1,341 +1,589 @@
 'use strict';
 
-var path = require('path'),
-    util = require('util');
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-module.exports = function (config) {
-  var core = require('./core')(config),
-      logger = core.getLogger('venues');
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-  function getCategories(params, accessToken, callback) {
-    logger.enter('getCategories');
-    logger.debug('getCategories:params: ' + util.inspect(params));
-    core.callApi('/venues/categories', accessToken, params || {}, callback);
-  }
+exports.default = function (config) {
+  var _this = this;
 
-  function explore(lat, lng, near, params, accessToken, callback) {
-    logger.enter('explore');
+  var core = (0, _core2.default)(config);
+  var logger = core.getLogger('venues');
+  var logHelper = new _logHelper2.default('Checkins', logger);
+
+  var getSimpleEndpoint = function getSimpleEndpoint(venueId, method, endpoint) {
+    var params = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    var accessToken = arguments[4];
+    var callback = arguments[5];
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
+      return;
+    }
+
+    core.callApi(_path2.default.join('/venues', venueId, endpoint), accessToken, {}, callback);
+  };
+
+  var getCategories = function getCategories() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var accessToken = arguments[1];
+    var callback = arguments[2];
+
+    var method = 'getCategories';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+    core.callApi('/venues/categories', accessToken, params, callback);
+  };
+
+  function searchLocation(location) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'searchLocation';
+    logger.enter(method);
+
     params = params || {};
 
-    if (!lat || !lng) {
-      if (!near) {
-        logger.error('Lat and Lng or near are required parameters.');
-        callback(new Error('Venues.explore: lat and lng or near are both required.'));
-        return;
-      } else {
-        params.near = near;
-      }
-    } else {
-      params.ll = lat + ',' + lng;
-    }
-    logger.debug('explore:params: ' + util.inspect(params));
+    var _params = params,
+        categoryIds = _params.categoryIds,
+        query = _params.query,
+        radius = _params.radius,
+        otherParams = _objectWithoutProperties(_params, ['categoryIds', 'query', 'radius']);
 
-    core.callApi('/venues/explore', accessToken, params, callback);
+    var locationParam = _locations2.default.getLocationAPIParameter({ location }, method, 'Venues', logger, callback);
+
+    if (!locationParam) {
+      return;
+    }
+
+    if (radius && !(categoryIds || query)) {
+      this.logger.error(`Venues: when using radius, either categoryIds or query
+        is required.`);
+      callback(new Error(`Venues.${method}: when using radius, either categoryIds or
+          query is required.`));
+    }
+
+    core.callApi('/venues/search', accessToken, _extends({
+      categoryId: categoryIds ? categoryIds.join(',') : '',
+      radius,
+      query
+    }, locationParam, otherParams), callback);
   }
 
-  function search(lat, lng, near, params, accessToken, callback) {
-    logger.enter('search');
+  var searchNear = function searchNear(place) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'searchLocation';
+    logger.enter(method);
+
     params = params || {};
 
-    if (params.intent !== 'global') {
-      if (!lat || !lng) {
-        if (!near) {
-          if (!params.ne || !params.sw) {
-            logger.error('Either lat and lng, near, or ne/sw are required as parameters.');
-            callback(new Error('Venues.explore: near or ne/sw must be specified if lat and lng are not set.'));
-            return;
-          }
-        } else {
-          params.near = near;
-        }
-      } else {
-        params.ll = lat + ',' + lng;
-      }
+    var _params2 = params,
+        categoryIds = _params2.categoryIds,
+        query = _params2.query,
+        radius = _params2.radius,
+        otherParams = _objectWithoutProperties(_params2, ['categoryIds', 'query', 'radius']);
+
+    if (radius && !(categoryIds || query)) {
+      _this.logger.error(`Venues: when using radius, either categoryIds or query
+        is required.`);
+      callback(new Error(`Venues.${method}: when using radius, either categoryIds or
+          query is required.`));
     }
 
-    logger.debug('search:lat: ' + lat);
-    logger.debug('search:lng: ' + lng);
-    logger.debug('search:near: ' + near);
-    logger.debug('search:params: ' + util.inspect(params));
-    core.callApi('/venues/search', accessToken, params, callback);
-  }
+    core.callApi('/venues/search', accessToken, _extends({
+      near: place,
+      categoryId: categoryIds ? categoryIds.join(',') : '',
+      radius,
+      query
+    }, otherParams), callback);
+  };
 
-  function getTrending(lat, lng, params, accessToken, callback) {
-    logger.enter('trending');
-    params = params || {};
+  var globalSearch = function globalSearch(query) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
 
-    if (!lat || !lng) {
-      logger.error('Lat and Lng are both required parameters.');
-      callback(new Error('Venues.explore: lat and lng are both required.'));
+    var method = 'globalSearch';
+    logger.enter(method);
+
+    logHelper.debugParams(_extends({ query }, params), method);
+
+    core.callApi('/venues/search', accessToken, _extends({ intent: global, query }, params), callback);
+  };
+
+  var browseBox = function browseBox(northEast, southWest) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments[4];
+
+    var method = 'browseBox';
+    logger.enter(method);
+
+    logHelper.debugParams(_extends({ northEast, southWest }, params), method);
+
+    var passedParams = _extends({
+      ne: northEast.lat + ',' + northEast.long,
+      sw: southWest.lat + ',' + southWest.long
+    }, params);
+    console.log(passedParams);
+
+    core.callApi('/venues/search', accessToken, _extends({ intent: 'browse' }, passedParams), callback);
+  };
+
+  var browseCircle = function browseCircle(location, radius) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments[4];
+
+    var method = 'browseBox';
+    logger.enter(method);
+
+    logHelper.debugParams(_extends({ location, radius }, params), method);
+
+    var locationParam = _locations2.default.getLocationAPIParameter({ location }, method, 'Venues', logger, callback);
+
+    if (!locationParam) {
       return;
     }
 
-    logger.debug('search:lat: ' + lat);
-    logger.debug('search:lng: ' + lng);
-    logger.debug('getTrending:params: ' + util.inspect(params));
-    params.ll = lat + ',' + lng;
-    core.callApi('/venues/trending', accessToken, params, callback);
-  }
+    core.callApi('/venues/search', accessToken, _extends({ intent: 'browse', radius }, locationParam, params), callback);
+  };
 
-  function getVenue(venueId, accessToken, callback) {
-    logger.enter('getVenue');
+  var match = function match(location, query) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments[4];
 
-    if (!venueId) {
-      logger.error('getVenue: venueId is required.');
-      callback(new Error('Venues.getVenue: venueId is required.'));
+    var method = 'browseBox';
+    logger.enter(method);
+
+    logHelper.debugParams(_extends({ location, query }, params), method);
+
+    var locationParam = _locations2.default.getLocationAPIParameter({ location }, method, 'Venues', logger, callback);
+
+    if (!locationParam) {
       return;
     }
 
-    logger.debug('getVenue:venueId: ' + venueId);
-    core.callApi(path.join('/venues', venueId), accessToken, null, callback);
-  }
+    core.callApi('/venues/search', accessToken, _extends({ intent: 'match', query }, locationParam, params), callback);
+  };
 
-  function getVenueAspect(venueId, aspect, params, accessToken, callback) {
-    logger.enter('getVenueAspect');
+  var exploreLocation = function exploreLocation(location) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
 
-    if (!venueId) {
-      logger.error('getVenueAspect: venueId is required.');
-      callback(new Error('Venues.getVenueAspect: venueId is required.'));
+    var method = 'exploreLocation';
+    logger.enter(method);
+
+    var locationParam = _locations2.default.getLocationAPIParameter({ location }, method, 'Venues', logger, callback);
+
+    if (!locationParam) {
       return;
     }
 
-    if (!aspect) {
-      logger.error('getVenueAspect: aspect is required.');
-      callback(new Error('Venues.getVenueAspect: aspect is required.'));
+    var _ref = params || {},
+        openNow = _ref.openNow,
+        sortByDistance = _ref.sortByDistance,
+        price = _ref.price,
+        saved = _ref.saved,
+        otherParams = _objectWithoutProperties(_ref, ['openNow', 'sortByDistance', 'price', 'saved']);
+
+    var sentParams = _extends({}, otherParams);
+
+    if (openNow) {
+      sentParams.openNow = '1';
+    }
+
+    if (sortByDistance) {
+      sentParams.sortByDistance = '1';
+    }
+
+    if (saved) {
+      sentParams.saved = '1';
+    }
+
+    if (price) {
+      sentParams.price = price.join(',');
+    }
+
+    logHelper.debugParams(_extends({ location }, sentParams), method);
+
+    core.callApi('/venues/explore', accessToken, _extends({}, locationParam, sentParams), callback);
+  };
+
+  var exploreNear = function exploreNear(place) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'exploreNear';
+    logger.enter(method);
+
+    var _ref2 = params || {},
+        openNow = _ref2.openNow,
+        sortByDistance = _ref2.sortByDistance,
+        price = _ref2.price,
+        saved = _ref2.saved,
+        otherParams = _objectWithoutProperties(_ref2, ['openNow', 'sortByDistance', 'price', 'saved']);
+
+    var sentParams = _extends({}, otherParams);
+
+    if (openNow) {
+      sentParams.openNow = '1';
+    }
+
+    if (sortByDistance) {
+      sentParams.sortByDistance = '1';
+    }
+
+    if (saved) {
+      sentParams.saved = '1';
+    }
+
+    if (price) {
+      sentParams.price = price.join(',');
+    }
+
+    logHelper.debugParams(_extends({ place }, sentParams), method);
+
+    core.callApi('/venues/explore', accessToken, _extends({ near: place }, sentParams), callback);
+  };
+
+  var getPhotos = function getPhotos(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getPhotos';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'photos', params, accessToken, callback);
+  };
+
+  var getTips = function getTips(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getTips';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'tips', params, accessToken, callback);
+  };
+
+  var getHours = function getHours(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getHours';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'hours', params, accessToken, callback);
+  };
+
+  var getMenu = function getMenu(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getMenu';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'menu', params, accessToken, callback);
+  };
+
+  var getLinks = function getLinks(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getLinks';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'links', params, accessToken, callback);
+  };
+
+  function getLocationTrending(location) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getLocationTrending';
+    logger.enter(method);
+
+    var locationParam = _locations2.default.getLocationAPIParameter({ location }, method, 'Venues', logger, callback);
+
+    if (!locationParam) {
       return;
     }
 
-    logger.debug('getVenueAspect:venueId: ' + venueId);
-    logger.debug('getVenueAspect:aspect: ' + aspect);
-    logger.debug('getVenueAspect:params: ' + util.inspect(params));
-    core.callApi(path.join('/venues', venueId, aspect), accessToken, params || {}, callback);
+    logHelper.debugParams(params, method);
+
+    core.callApi('/venues/trending', accessToken, _extends({}, locationParam, params), callback);
   }
 
-  function getHereNow(venueId, params, accessToken, callback) {
-    logger.enter('getHereNow');
+  var getNearTrending = function getNearTrending(place) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
 
-    if (!venueId) {
-      logger.error('getHereNow: venueId is required.');
-      callback(new Error('Venues.getHereNow: venueId is required.'));
+    var method = 'searchNear';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ place }, method, callback)) {
       return;
     }
 
-    logger.debug('getHereNow:venueId: ' + venueId);
-    logger.debug('getHereNow:params: ' + util.inspect(params));
-    core.callApi(path.join('/venues', venueId, 'herenow'), accessToken, params || {}, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function getTips(venueId, params, accessToken, callback) {
-    logger.enter('getTips');
+    core.callApi('/venues/search', accessToken, _extends({
+      near: place
+    }, params), callback);
+  };
 
-    if (!venueId) {
-      logger.error('getTips: venueId is required.');
-      callback(new Error('Venues.getTips: venueId is required.'));
+  function getLocationSuggestCompletion(location, query) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments[4];
+
+    var method = 'getLocationSuggestCompletion';
+    logger.enter(method);
+
+    var locationParam = _locations2.default.getLocationAPIParameter({ location }, method, 'Venues', logger, callback);
+
+    if (!locationParam) {
       return;
     }
 
-    logger.debug('getTips:venueId: ' + venueId);
-    logger.debug('getTips:params: ' + util.inspect(params));
-    getVenueAspect(venueId, 'tips', params, accessToken, callback);
+    logHelper.debugParams(params, method);
+
+    core.callApi('/venues/suggestcompletion', accessToken, _extends({}, locationParam, params), callback);
   }
 
-  function getListed(venueId, params, accessToken, callback) {
-    logger.enter('getLists');
+  var getNearSuggestCompletion = function getNearSuggestCompletion(place, query) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments[4];
 
-    if (!venueId) {
-      logger.error('getLists: venueId is required.');
-      callback(new Error('Venues.getLists: venueId is required.'));
+    var method = 'getNearTrending';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ place }, method, callback)) {
       return;
     }
 
-    logger.debug('getLists:venueId: ' + venueId);
-    logger.debug('getLists:params: ' + util.inspect(params));
-    getVenueAspect(venueId, 'listed', params, accessToken, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function getStats(venueId, params, accessToken, callback) {
-    logger.enter('getStats');
+    core.callApi('/venues/search', accessToken, _extends({
+      near: place
+    }, params), callback);
+  };
 
-    if (!venueId) {
-      logger.error('getStats: venueId is required.');
-      callback(new Error('Venues.getStats: venueId is required.'));
+  var getBoxedSuggestCompletion = function getBoxedSuggestCompletion(northEast, southWest, query) {
+    var params = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    var accessToken = arguments[4];
+    var callback = arguments[5];
+
+    var method = 'getBoxedSuggestCompletion';
+    logger.enter(method);
+
+    logHelper.debugParams(_extends({ northEast, southWest }, params), method);
+
+    var passedParams = _extends({
+      ne: northEast.lat + ',' + northEast.long,
+      sw: southWest.lat + ',' + southWest.long
+    }, params);
+
+    core.callApi('/venues/suggestcompletion', accessToken, _extends({ intent: 'browse' }, passedParams), callback);
+  };
+
+  var getLikes = function getLikes(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getLikes';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'likes', params, accessToken, callback);
+  };
+
+  var getSimilar = function getSimilar(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getSimilar';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'similar', params, accessToken, callback);
+  };
+
+  var getEvents = function getEvents(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getEvents';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'evengts', params, accessToken, callback);
+  };
+
+  var getNextVenue = function getNextVenue(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getNextVenue';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'nextvenue', params, accessToken, callback);
+  };
+
+  var getListed = function getListed(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getListed';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, 'listed', params, accessToken, callback);
+  };
+
+  var getTimeSeriesStats = function getTimeSeriesStats(venueIds, startAt) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    var accessToken = arguments[3];
+    var callback = arguments[4];
+
+    var method = 'getTimeSeries';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueIds, startAt }, method, callback)) {
+      return;
+    }
+    logHelper.debugParams(params, method);
+
+    var _ref3 = params || {},
+        fields = _ref3.fields,
+        otherParams = _objectWithoutProperties(_ref3, ['fields']);
+
+    fields = fields || [];
+    core.callApi('/venues/timeseries', accessToken, _extends({
+      fields: fields.join(','),
+      startAt
+    }, otherParams), callback);
+  };
+
+  var getStats = function getStats(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getTimeSeries';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
+      return;
+    }
+    logHelper.debugParams(params, method);
+    core.callApi(_path2.default.join('/venues', venueId, 'stats'), accessToken, params, callback);
+  };
+
+  var getManagedVenues = function getManagedVenues() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var accessToken = arguments[1];
+    var callback = arguments[2];
+
+    var method = 'getCategories';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+    core.callApi('/venues/managed', accessToken, params, callback);
+  };
+
+  var like = function like(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty;
+
+    var method = 'like';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
       return;
     }
 
-    logger.debug('getStats:venueId: ' + venueId);
-    logger.debug('getStats:params: ' + util.inspect(params));
-    getVenueAspect(venueId, 'stats', params, accessToken, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function getPhotos(venueId, group, params, accessToken, callback) {
-    logger.enter('getPhotos');
+    core.postApi(_path2.default.join('/venues', venueId, 'like'), accessToken, { set: 1 }, callback);
+  };
 
-    if (!venueId) {
-      logger.error('getPhotos: venueId is required.');
-      callback(new Error('Venues.getPhotos: venueId is required.'));
+  var unlike = function unlike(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _callbacks.empty;
+
+    var method = 'unlike';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
       return;
     }
 
-    logger.debug('getPhotos:venueId: ' + venueId);
-    logger.debug('getPhotos:group: ' + group);
-    logger.debug('getPhotos:params: ' + util.inspect(params));
-    params = params || {};
-    params.group = group || 'venue';
-    getVenueAspect(venueId, 'photos', params, accessToken, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  function getLinks(venueId, accessToken, callback) {
-    logger.enter('getLinks');
-
-    if (!venueId) {
-      logger.error('getLinks: venueId is required.');
-      callback(new Error('Venues.getLinks: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getLinks:venueId: ' + venueId);
-    getVenueAspect(venueId, 'links', {}, accessToken, callback);
-  }
-
-  function getEvents(venueId, accessToken, callback) {
-    logger.enter('getEvents');
-
-    if (!venueId) {
-      logger.error('getEvents: venueId is required.');
-      callback(new Error('Venues.getEvents: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getEvents:venueId: ' + venueId);
-    getVenueAspect(venueId, 'events', {}, accessToken, callback);
-  }
-
-  function getLikes(venueId, accessToken, callback) {
-    logger.enter('getLikes');
-
-    if (!venueId) {
-      logger.error('getLikes: venueId is required.');
-      callback(new Error('Venues.getLikes: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getLikes:venueId: ' + venueId);
-    getVenueAspect(venueId, 'likes', {}, accessToken, callback);
-  }
-
-  function getHours(venueId, accessToken, callback) {
-    logger.enter('getHours');
-
-    if (!venueId) {
-      logger.error('getHours: venueId is required.');
-      callback(new Error('Venues.getHours: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getHours:venueId: ' + venueId);
-    getVenueAspect(venueId, 'hours', {}, accessToken, callback);
-  }
-
-  function getSimilar(venueId, accessToken, callback) {
-    logger.enter('getSimilar');
-
-    if (!venueId) {
-      logger.error('getSimilar: venueId is required.');
-      callback(new Error('Venues.getSimilar: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getSimilar:venueId: ' + venueId);
-    getVenueAspect(venueId, 'similar', {}, accessToken, callback);
-  }
-
-  function getMenu(venueId, accessToken, callback) {
-    logger.enter('getMenu');
-
-    if (!venueId) {
-      logger.error('getMenu: venueId is required.');
-      callback(new Error('Venues.getMenu: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getMenu:venueId: ' + venueId);
-    getVenueAspect(venueId, 'menu', {}, accessToken, callback);
-  }
-
-  function getTimeseries(venueIds, params, accessToken, callback) {
-    logger.enter('getTimeseries');
-
-    if (!venueIds) {
-      logger.error('getTimeseries: venueIds is required.');
-      callback(new Error('Venues.getTimeseries: venueIds is required.'));
-      return;
-    }
-    logger.debug('getTimeseries:venueIds: ' + venueIds);
-    venueIds = [].concat(venueIds);
-    venueIds = venueIds.join(',');
-    getVenueAspect(venueIds, 'timeseries', params, accessToken, callback);
-  }
-
-  function getManaged(accessToken, callback) {
-    logger.enter('getManaged');
-    core.callApi('/venues/managed', accessToken, {}, callback);
-  }
-
-  function getSuggestcompletion(lat, lng, query, params, accessToken, callback) {
-    logger.enter('suggestComplete');
-    params = params || {};
-
-    logger.debug('getSuggestcompletion:params: ' + util.inspect(params));
-
-    if (!query || query.length < 3) {
-      logger.error('Query is required and must be at least 3 characters long.');
-      callback(new Error('Venues.getSuggestcompletion: Query is required and must be at least 3 characters long.'));
-      return;
-    }
-
-    if (!lat || !lng) {
-      if (!params.near) {
-        logger.error('Either lat and lng or near are required as parameters.');
-        callback(new Error('Venues.getSuggestcompletion: near must be specified as a parameter if lat and lng are not set.'));
-        return;
-      }
-    } else {
-      params.ll = lat + ',' + lng;
-    }
-
-    if (!query) {
-      logger.error('Query is a required parameter.');
-      callback(new Error('Venues.getSuggestcompletion: query is a required parameter.'));
-      return;
-    }
-    params.query = query;
-
-    logger.debug('getSuggestcompletion:lat: ' + lat);
-    logger.debug('getSuggestcompletion:lng: ' + lng);
-    logger.debug('getSuggestcompletion:query: ' + query);
-    core.callApi('/venues/suggestcompletion', accessToken, params, callback);
-  }
+    core.postApi(_path2.default.join('/venues', venueId, 'like'), accessToken, { set: 0 }, callback);
+  };
 
   return {
-    'explore': explore,
-    'getCategories': getCategories,
-    'getEvents': getEvents,
-    'getHereNow': getHereNow,
-    'getHours': getHours,
-    'getLikes': getLikes,
-    'getLinks': getLinks,
-    'getListed': getListed,
-    'getManaged': getManaged,
-    'getMenu': getMenu,
-    'getPhotos': getPhotos,
-    'getSimilar': getSimilar,
-    'getStats': getStats,
-    'getSuggestcompletion': getSuggestcompletion,
-    'getTimeseries': getTimeseries,
-    'getTips': getTips,
-    'getTrending': getTrending,
-    'getVenue': getVenue,
-    'getVenueAspect': getVenueAspect,
-    'search': search
+    browseBox,
+    browseCircle,
+    exploreLocation,
+    exploreNear,
+    getBoxedSuggestCompletion,
+    getCategories,
+    getEvents,
+    getHours,
+    getLikes,
+    getLinks,
+    getListed,
+    getLocationSuggestCompletion,
+    getLocationTrending,
+    getManagedVenues,
+    getMenu,
+    getNearSuggestCompletion,
+    getNearTrending,
+    getNextVenue,
+    getPhotos,
+    getSimilar,
+    getStats,
+    getTimeSeriesStats,
+    getTips,
+    globalSearch,
+    like,
+    match,
+    searchLocation,
+    searchNear,
+    unlike
   };
 };
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _core = require('./core');
+
+var _core2 = _interopRequireDefault(_core);
+
+var _locations = require('./util/locations');
+
+var _locations2 = _interopRequireDefault(_locations);
+
+var _callbacks = require('./util/callbacks');
+
+var _logHelper = require('./util/logHelper');
+
+var _logHelper2 = _interopRequireDefault(_logHelper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }

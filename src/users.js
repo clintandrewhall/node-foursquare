@@ -1,239 +1,354 @@
-var util = require('util');
+/* @flow */
+import path from 'path';
+
+import coreModule from './core';
+import locations from './util/locations';
+
+import type { FoursquareConfig } from './config-default';
+import type { CallbackFunction } from './util/callbacks';
+import type { LocationParameter } from './util/locations';
+
+import LogHelper from './util/logHelper';
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
 
 /**
  * A module for retrieving information about Users from Foursquare.
- * @param {Object} config A valid configuration.
  * @module node-foursquare/Users
  */
-module.exports = function(config) {
-  var core = require('./core')(config),
-    logger = core.getLogger('users');
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
+  const core = coreModule(config);
+  const logger = core.getLogger('users');
+  const logHelper = new LogHelper('Users', logger);
 
   /**
    * Find Foursquare Users.
-   * @memberof module:node-foursquare/Users
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/search
    */
-  function search(params, accessToken, callback) {
-    logger.enter('search');
-    logger.debug('search:params: ' + util.inspect(params));
-    core.callApi('/users/search', accessToken, params || {}, callback);
-  }
-
-  /**
-   * Retrieve Friend Requests for the user identified by the supplied accessToken.
-   * @memberof module:node-foursquare/Users
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/requests
-   */
-  function getRequests(accessToken, callback) {
-    logger.enter('getRequests');
-    core.callApi('/users/requests', accessToken, {}, callback);
-  }
+  const search = (
+    params: ?{
+      phone?: string,
+      email?: string,
+      twitter?: string,
+      twitterSource?: string,
+      fbid?: string,
+      name?: string,
+      onlyPages?: boolean,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'search';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+    core.callApi('/users/search', accessToken, params, callback);
+  };
 
   /**
    * Retrieve a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} userId The id of the User to retreive.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/users
    */
-  function getUser(userId, accessToken, callback) {
-    logger.enter('getUser');
+  const getDetails = (
+    userId: string,
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getDetails';
+    logger.enter(method);
 
-    if(!userId) {
-      logger.error('getUser: userId is required.');
-      callback(new Error('Users.getUser: userId is required.'));
+    if (!logHelper.debugAndCheckParams({ userId }, method, callback)) {
       return;
     }
 
-    logger.debug('getUser:userId: ' + userId);
     core.callApi('/users/' + userId, accessToken, null, callback);
-  }
+  };
 
   /**
-   * Retreive a named aspect for a User from the Foursquare API.
-   * @memberof module:node-foursquare/Users
-   * @param {String} aspect The aspect to retrieve. Refer to Foursquare documentation for details on currently
-   * supported aspects.
-   * @param {String} [userId='self'] The id of the User to retreive.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/index_docs
+   * Retrieve the current Foursquare User.
    */
-  function getUserAspect(aspect, userId, params, accessToken, callback) {
-    logger.enter('getUser');
+  const getSelfDetails = (accessToken: string, callback: CallbackFunction) => {
+    return getDetails('self', accessToken, callback);
+  };
 
-    if(!aspect) {
-      logger.error('getUserAspect: aspect is required.');
-      callback(new Error('Users.getUserAspect: aspect is required.'));
+  /**
+   * Retrieve Check-ins for the current Foursquare User.
+   */
+  const getSelfCheckins = (
+    params: ?{
+      limit?: number,
+      offset?: number,
+      sort?: 'newestfirst' | 'oldestfirst',
+      afterTimestamp?: number,
+      beforeTimestamp?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getSelfCheckins';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+    core.callApi('/users/self/checkins', accessToken, params, callback);
+  };
+
+  /**
+   * Retrieve Friends for a Foursquare User.
+   */
+  const getFriends = (
+    userId: string,
+    params: ?{
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getFriends';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ userId }, method, callback)) {
       return;
     }
-    logger.debug('getUserAspect:aspect,userId: ' + aspect + ',' + userId);
-    logger.debug('getUserAspect:params: ' + util.inspect(params));
 
-    core.callApi('/users/' + (userId || 'self') + '/' + aspect, accessToken, params, callback);
-  }
+    logHelper.debugParams(params, method);
 
-  /**
-   * Retrieve Check-ins for a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/checkins
-   */
-  function getCheckins(userId, params, accessToken, callback) {
-    logger.enter('getCheckins');
-    logger.debug('getCheckins:params: ' + util.inspect(params));
-    getUserAspect('checkins', userId, params, accessToken, callback);
-  }
+    core.callApi(
+      path.join('/users', userId, 'friends'),
+      accessToken,
+      params,
+      callback
+    );
+  };
 
   /**
    * Retrieve Friends for a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/friends
    */
-  function getFriends(userId, params, accessToken, callback) {
-    logger.enter('getFriends');
-    logger.debug('getFriends:params: ' + util.inspect(params));
-    getUserAspect('friends', userId, params, accessToken, callback);
-  }
-
-
-  /**
-   * Retrieve Friends for a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/friends
-   */
-  function getMayorships(userId, params, accessToken, callback) {
-    logger.enter('getMayorships');
-    logger.debug('getMayorships:userId: ' + userId);
-    logger.debug('getMayorships:params: ' + util.inspect(params));
-    getUserAspect('mayorships', userId, params, accessToken, callback);
-  }
-
+  const getSelfFriends = (
+    params: ?{
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    return getFriends('self', params, accessToken, callback);
+  };
 
   /**
    * Retrieve Lists for a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/lists
    */
-  function getLists(userId, params, accessToken, callback) {
-    logger.enter('getLists');
-    logger.debug('getLists:userId: ' + userId);
-    logger.debug('getLists:params: ' + util.inspect(params));
-    getUserAspect('lists', userId, params, accessToken, callback);
-  }
+  const getLists = (
+    userId: string,
+    params: ?{
+      group?: 'created' | 'edited | followed | friends | suggested',
+      location?: LocationParameter,
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getLists';
+    logger.enter(method);
 
+    if (!logHelper.debugAndCheckParams({ userId }, method, callback)) {
+      return;
+    }
+
+    params = params || {};
+
+    // eslint-disable-next-line no-unused-vars
+    const { location, ...otherParams } = params;
+    const locationParams = locations.getLocationAPIParameter(
+      params,
+      method,
+      'Lists',
+      logger,
+      callback
+    );
+
+    logHelper.debugParams({ ...locationParams, ...otherParams }, method);
+
+    core.callApi(
+      path.join('/users', userId, 'lists'),
+      accessToken,
+      { ...locationParams, ...otherParams },
+      callback
+    );
+  };
+
+  /**
+   * Retrieve Lists for the current Foursquare User.
+   */
+  const getSelfLists = (
+    params: ?{
+      group?: 'created' | 'edited | followed | friends | suggested',
+      location?: LocationParameter,
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    return getLists('self', params, accessToken, callback);
+  };
 
   /**
    * Retrieve Photos for a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/lists
    */
-  function getPhotos(userId, params, accessToken, callback) {
-    logger.enter('getPhotos');
-    logger.debug('getPhotos:userId: ' + userId);
-    logger.debug('getPhotos:params: ' + util.inspect(params));
-    getUserAspect('photos', userId, params, accessToken, callback);
-  }
+  const getPhotos = (
+    userId: string,
+    params: ?{ limit?: number, offset?: number } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getPhotos';
+
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ userId }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.callApi(
+      path.join('/users', userId, 'photos'),
+      accessToken,
+      params,
+      callback
+    );
+  };
 
   /**
-   * Retrieve Tips for a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String|Number} [params.lat] The latitude of the location around which to search.
-   * @param {String|Number} [params.lng] The longitude of the location around which to search.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/tips
+   * Retrieve Photos for the current Foursquare User.
    */
-  function getTips(userId, params, accessToken, callback) {
-    logger.enter('getTips');
-    logger.debug('getTips:userId: ' + userId);
-    logger.debug('getTips:params: ' + util.inspect(params));
-    getUserAspect('tips', userId, params, accessToken, callback);
-  }
+  const getSelfPhotos = (
+    params: ?{ limit?: number, offset?: number } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    return getPhotos('self', params, accessToken, callback);
+  };
 
   /**
-   * Retrieve Venues visited by a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/venuehistory
+   * Retrieve Venues visited by the current Foursquare User.
    */
-  function getVenueHistory(userId, params, accessToken, callback) {
-    logger.enter('getVenueHistory');
-    logger.debug('getVenueHistory:userId: ' + userId);
-    logger.debug('getVenueHistory:params: ' + util.inspect(params));
-    getUserAspect('venuehistory', userId, params, accessToken, callback);
+  function getSelfVenueHistory(
+    params: ?{
+      beforeTimestamp?: number,
+      afterTimestamp?: number,
+      categoryId?: string,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) {
+    const method = 'getSelfVenueHistory';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+
+    core.callApi('/users/self/venuehistory', accessToken, params, callback);
   }
 
   /**
    * Retrieve Venues liked by a Foursquare User.
-   * @memberof module:node-foursquare/Users
-   * @param {String} [userId='self'] The id of the user.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} accessToken The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/users/venuelikes
    */
-  function getVenueLikes(userId, params, accessToken, callback) {
-    logger.enter('getVenueLikes');
-    logger.debug('getVenueLikes:userId: ' + userId);
-    logger.debug('getVenueLikes:params: ' + util.inspect(params));
-    getUserAspect('venuelikes', userId, params, accessToken, callback);
-  }
+  const getVenueLikes = (
+    userId: string,
+    params: ?{
+      beforeTimestamp?: number,
+      afterTimestamp?: number,
+      categoryId?: string,
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getVenueLikes';
+
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ userId }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.callApi(
+      path.join('/users', userId, 'venuelikes'),
+      accessToken,
+      params,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve Venues liked by the current Foursquare User.
+   */
+  const getSelfVenueLikes = (
+    params: ?{
+      beforeTimestamp?: number,
+      afterTimestamp?: number,
+      categoryId?: string,
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    return getVenueLikes('self', params, accessToken, callback);
+  };
+
+  /**
+   * Retrieve Venues liked by a Foursquare User.
+   */
+  const getTastes = (
+    userId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getTastes';
+
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ userId }, method, callback)) {
+      return;
+    }
+
+    core.callApi(
+      path.join('/users', userId, 'tastes'),
+      accessToken,
+      params,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve Venues liked by the current Foursquare User.
+   */
+  const getSelfTastes = (
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    return getTastes('self', params, accessToken, callback);
+  };
 
   return {
-    'getCheckins' : getCheckins,
-    'getFriends' : getFriends,
-    'getLists' : getLists,
-    'getMayorships' : getMayorships,
-    'getPhotos' : getPhotos,
-    'getRequests' : getRequests,
-    'getTips' : getTips,
-    'getUser' : getUser,
-    'getUserAspect' : getUserAspect,
-    'getVenueHistory' : getVenueHistory,
-    'getVenueLikes' : getVenueLikes,
-    'search' : search
-  }
-};
+    getDetails,
+    getFriends,
+    getLists,
+    getPhotos,
+    getSelfCheckins,
+    getSelfDetails,
+    getSelfFriends,
+    getSelfLists,
+    getSelfPhotos,
+    getSelfTastes,
+    getSelfVenueHistory,
+    getSelfVenueLikes,
+    getTastes,
+    getVenueLikes,
+    search,
+  };
+}

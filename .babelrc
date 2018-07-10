@@ -1,9 +1,6 @@
 {
   "comments": false,
-  "plugins": [
-    "transform-object-rest-spread",
-    "transform-merge-sibling-variables"
-  ],
+  "plugins": ["transform-object-rest-spread"],
   "presets": [
     [
       "env",
@@ -13,6 +10,7 @@
         }
       }
     ],
-    "flow"
+    "flow",
+    "stage-0"
   ]
 }

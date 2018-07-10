@@ -1,539 +1,951 @@
-var path = require('path'),
-    util = require('util');
-  
+/* @flow */
+import path from 'path';
+
+import coreModule from './core';
+import locations from './util/locations';
+
+import type { FoursquareConfig } from './config-default';
+import type { CallbackFunction } from './util/callbacks';
+import type { LatLngParameter, LocationParameter } from './util/locations';
+
+import { empty } from './util/callbacks';
+import LogHelper from './util/logHelper';
+import defaultConfig from './config-default';
+import mergeDeep from './util/mergeDeep';
+
+type SearchParams = {
+  limit?: number,
+  linkedId?: string,
+  providerId?: string,
+  url?: string,
+};
+
+type CategorizedSearchParams = SearchParams & {
+  categoryIds?: Array<string>,
+};
+
+type AllSearchParams = CategorizedSearchParams & {
+  query?: string,
+  radius?: number,
+};
+
+type ExploreParams = {
+  day?: 'any',
+  friendVisits?: 'visited' | 'notVisited',
+  lastVenue?: string,
+  limit?: number,
+  novelty?: 'new' | 'old',
+  offset?: number,
+  openNow?: boolean,
+  price?: Array<'1' | '2' | '3' | '4'>,
+  query?: string,
+  radius?: number,
+  saved?: boolean,
+  section?:
+    | 'arts'
+    | 'coffee'
+    | 'drinks'
+    | 'food'
+    | 'nextVenues'
+    | 'outdoors'
+    | 'shops'
+    | 'sights'
+    | 'topPicks'
+    | 'trending',
+  sortByDistance?: boolean,
+  time?: 'any',
+};
+
 /**
  * A module for retrieving information about Venues from Foursquare.
- * @param {Object} config A valid configuration.
  * @module node-foursquare/Venues
  */
-module.exports = function(config) {
-  var core = require('./core')(config),
-    logger = core.getLogger('venues');
+export default function(providedConfig: Object | FoursquareConfig = {}) {
+  const config = mergeDeep(defaultConfig, providedConfig || {});
+  const core = coreModule(config);
+  const logger = core.getLogger('venues');
+  const logHelper = new LogHelper('Checkins', logger);
+
+  const getSimpleEndpoint = (
+    venueId: string,
+    method: string,
+    endpoint: string,
+    params: any = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
+      return;
+    }
+
+    core.callApi(
+      path.join('/venues', venueId, endpoint),
+      accessToken,
+      {},
+      callback
+    );
+  };
 
   /**
    * Retrieve a list of Venue Categories.
-   * @memberof module:node-foursquare/Venues
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/categories
    */
-  function getCategories(params, accessToken, callback) {
-    logger.enter('getCategories');
-    logger.debug('getCategories:params: ' + util.inspect(params));
-    core.callApi('/venues/categories', accessToken, params || {}, callback);
-  }
-
-  /**
-   * Explore Foursquare Venues.
-   * @memberof module:node-foursquare/Venues
-   * @param {String|Number} lat The latitude of the location around which to explore.
-   * @param {String|Number} lng The longitude of the location around which to explore.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/explore
-   */
-  function explore(lat, lng, near, params, accessToken, callback) {
-    logger.enter('explore');
-    params = params || {};
-
-    if(!lat || !lng) {
-      if(!near) {
-        logger.error('Lat and Lng or near are required parameters.');
-        callback(new Error('Venues.explore: lat and lng or near are both required.'));
-        return;
-      } else {
-        params.near = near;
-      }
-    } else {
-      params.ll = lat + ',' + lng;
-    }
-    logger.debug('explore:params: ' + util.inspect(params));
-
-    core.callApi('/venues/explore', accessToken, params, callback);
-  }
+  const getCategories = (
+    params: ?{} = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getCategories';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+    core.callApi('/venues/categories', accessToken, params, callback);
+  };
 
   /**
    * Search Foursquare Venues.
-   * @memberof module:node-foursquare/Venues
-   * @param {String|Number} lat The latitude of the location around which to search.
-   * @param {String|Number} lng The longitude of the location around which to search.
-   * @param {String} near The string representation of a location in 'Anytown, CA' format.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/search
    */
-  function search(lat, lng, near, params, accessToken, callback) {
-    logger.enter('search');
+  function searchLocation(
+    location: LocationParameter,
+    params: ?AllSearchParams & {} = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) {
+    const method = 'searchLocation';
+    logger.enter(method);
+
     params = params || {};
 
-    // Global search intent ignores all parameters other than 'query' and 'limit' so no need to validate anything.
-    if (params.intent !== 'global') {
-      if (!lat || !lng) {
-        if (!near) {
-          if (!params.ne || !params.sw) {
-              logger.error('Either lat and lng, near, or ne/sw are required as parameters.');
-              callback(new Error('Venues.explore: near or ne/sw must be specified if lat and lng are not set.'));
-              return;
-          }
-        } else {
-          params.near = near;
-        }
-      } else {
-        params.ll = lat + ',' + lng;
-      }
+    const { categoryIds, query, radius, ...otherParams } = params;
+
+    const locationParam = locations.getLocationAPIParameter(
+      { location },
+      method,
+      'Venues',
+      logger,
+      callback
+    );
+
+    if (!locationParam) {
+      return;
     }
 
-    logger.debug('search:lat: ' + lat);
-    logger.debug('search:lng: ' + lng);
-    logger.debug('search:near: ' + near);
-    logger.debug('search:params: ' + util.inspect(params));
-    core.callApi('/venues/search', accessToken, params, callback);
+    if (radius && !(categoryIds || query)) {
+      this.logger.error(`Venues: when using radius, either categoryIds or query
+        is required.`);
+      callback(
+        new Error(`Venues.${method}: when using radius, either categoryIds or
+          query is required.`)
+      );
+    }
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      {
+        categoryId: categoryIds ? categoryIds.join(',') : '',
+        radius,
+        query,
+        ...locationParam,
+        ...otherParams,
+      },
+      callback
+    );
   }
 
-  /**
-   * Return Foursquare Venues near location with the most people currently checked in.
-   * @memberof module:node-foursquare/Venues
-   * @param {String|Number} lat The latitude of the location around which to search.
-   * @param {String|Number} lng The longitude of the location around which to search.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/trending
-   */
-  function getTrending(lat, lng, params, accessToken, callback) {
-    logger.enter('trending');
+  const searchNear = (
+    place: string,
+    params: ?AllSearchParams = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'searchLocation';
+    logger.enter(method);
+
     params = params || {};
 
-    if(!lat || !lng) {
-      logger.error('Lat and Lng are both required parameters.');
-      callback(new Error('Venues.explore: lat and lng are both required.'));
+    const { categoryIds, query, radius, ...otherParams } = params;
+
+    if (radius && !(categoryIds || query)) {
+      this.logger.error(`Venues: when using radius, either categoryIds or query
+        is required.`);
+      callback(
+        new Error(`Venues.${method}: when using radius, either categoryIds or
+          query is required.`)
+      );
+    }
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      {
+        near: place,
+        categoryId: categoryIds ? categoryIds.join(',') : '',
+        radius,
+        query,
+        ...otherParams,
+      },
+      callback
+    );
+  };
+
+  const globalSearch = (
+    query: string,
+    params: ?CategorizedSearchParams = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'globalSearch';
+    logger.enter(method);
+
+    logHelper.debugParams({ query, ...params }, method);
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      { intent: global, query, ...params },
+      callback
+    );
+  };
+
+  const browseBox = (
+    northEast: LatLngParameter,
+    southWest: LatLngParameter,
+    params: ?CategorizedSearchParams = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'browseBox';
+    logger.enter(method);
+
+    logHelper.debugParams({ northEast, southWest, ...params }, method);
+
+    const passedParams = {
+      ne: northEast.lat + ',' + northEast.long,
+      sw: southWest.lat + ',' + southWest.long,
+      ...params,
+    };
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      { intent: 'browse', ...passedParams },
+      callback
+    );
+  };
+
+  const browseCircle = (
+    location: LocationParameter,
+    radius: ?number,
+    params: ?CategorizedSearchParams = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'browseBox';
+    logger.enter(method);
+
+    logHelper.debugParams({ location, radius, ...params }, method);
+
+    const locationParam = locations.getLocationAPIParameter(
+      { location },
+      method,
+      'Venues',
+      logger,
+      callback
+    );
+
+    if (!locationParam) {
       return;
     }
 
-    logger.debug('search:lat: ' + lat);
-    logger.debug('search:lng: ' + lng);
-    logger.debug('getTrending:params: ' + util.inspect(params));
-    params.ll = lat + ',' + lng;
-    core.callApi('/venues/trending', accessToken, params, callback);
-  }
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      { intent: 'browse', radius, ...locationParam, ...params },
+      callback
+    );
+  };
+
+  const match = (
+    location: LocationParameter,
+    query: string,
+    params: ?SearchParams = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'browseBox';
+    logger.enter(method);
+
+    logHelper.debugParams({ location, query, ...params }, method);
+
+    const locationParam = locations.getLocationAPIParameter(
+      { location },
+      method,
+      'Venues',
+      logger,
+      callback
+    );
+
+    if (!locationParam) {
+      return;
+    }
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      { intent: 'match', query, ...locationParam, ...params },
+      callback
+    );
+  };
 
   /**
-   * Retrieve a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/venues
+   * Explore Foursquare Venues near a location.
    */
-  function getVenue(venueId, accessToken, callback) {
-    logger.enter('getVenue');
+  const exploreLocation = (
+    location: LocationParameter,
+    params: ?ExploreParams = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'exploreLocation';
+    logger.enter(method);
 
-    if (!venueId) {
-      logger.error('getVenue: venueId is required.');
-      callback(new Error('Venues.getVenue: venueId is required.'));
+    const locationParam = locations.getLocationAPIParameter(
+      { location },
+      method,
+      'Venues',
+      logger,
+      callback
+    );
+
+    if (!locationParam) {
       return;
     }
 
-    logger.debug('getVenue:venueId: ' + venueId);
-    core.callApi(path.join('/venues', venueId), accessToken, null, callback);
-  }
+    const { openNow, sortByDistance, price, saved, ...otherParams } =
+      params || {};
+
+    let sentParams: { [string]: any } = { ...otherParams };
+
+    if (openNow) {
+      sentParams.openNow = '1';
+    }
+
+    if (sortByDistance) {
+      sentParams.sortByDistance = '1';
+    }
+
+    if (saved) {
+      sentParams.saved = '1';
+    }
+
+    if (price) {
+      sentParams.price = price.join(',');
+    }
+
+    logHelper.debugParams({ location, ...sentParams }, method);
+
+    core.callApi(
+      '/venues/explore',
+      accessToken,
+      { ...locationParam, ...sentParams },
+      callback
+    );
+  };
 
   /**
-   * Retrieve a specific aspect from the Venues endpoint.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} aspect The aspect to retrieve. Refer to Foursquare documentation for details on currently
-   * supported aspects.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/index_docs
+   * Explore Foursquare Venues near a named place, (e.g. Chicago, IL).
    */
-  function getVenueAspect(venueId, aspect, params, accessToken, callback) {
-    logger.enter('getVenueAspect');
+  const exploreNear = (
+    place: string,
+    params: ?ExploreParams = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'exploreNear';
+    logger.enter(method);
 
-    if (!venueId) {
-      logger.error('getVenueAspect: venueId is required.');
-      callback(new Error('Venues.getVenueAspect: venueId is required.'));
-      return;
+    const { openNow, sortByDistance, price, saved, ...otherParams } =
+      params || {};
+
+    let sentParams: { [string]: any } = { ...otherParams };
+
+    if (openNow) {
+      sentParams.openNow = '1';
     }
 
-    if (!aspect) {
-      logger.error('getVenueAspect: aspect is required.');
-      callback(new Error('Venues.getVenueAspect: aspect is required.'));
-      return;
+    if (sortByDistance) {
+      sentParams.sortByDistance = '1';
     }
 
-    logger.debug('getVenueAspect:venueId: ' + venueId);
-    logger.debug('getVenueAspect:aspect: ' + aspect);
-    logger.debug('getVenueAspect:params: ' + util.inspect(params));
-    core.callApi(path.join('/venues', venueId, aspect), accessToken, params || {}, callback);
-  }
-
-  /**
-   * Retrieve Check-ins for Users who are at a Venue 'now'.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/herenow
-   */
-  function getHereNow(venueId, params, accessToken, callback) {
-    logger.enter('getHereNow');
-
-    if (!venueId) {
-      logger.error('getHereNow: venueId is required.');
-      callback(new Error('Venues.getHereNow: venueId is required.'));
-      return;
+    if (saved) {
+      sentParams.saved = '1';
     }
 
-    logger.debug('getHereNow:venueId: ' + venueId);
-    logger.debug('getHereNow:params: ' + util.inspect(params));
-    core.callApi(path.join('/venues', venueId, 'herenow'), accessToken, params || {}, callback);
-  }
-
-  /**
-   * Retrieve Tips for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/tips
-   */
-  function getTips(venueId, params, accessToken, callback) {
-    logger.enter('getTips');
-
-    if (!venueId) {
-      logger.error('getTips: venueId is required.');
-      callback(new Error('Venues.getTips: venueId is required.'));
-      return;
+    if (price) {
+      sentParams.price = price.join(',');
     }
 
-    logger.debug('getTips:venueId: ' + venueId);
-    logger.debug('getTips:params: ' + util.inspect(params));
-    getVenueAspect(venueId, 'tips', params, accessToken, callback)
-  }
+    logHelper.debugParams({ place, ...sentParams }, method);
 
-  /**
-   * Retrieve Lists where a Foursquare Venue is listed.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/listed
-   */
-  function getListed(venueId, params, accessToken, callback) {
-    logger.enter('getLists');
-
-    if (!venueId) {
-      logger.error('getLists: venueId is required.');
-      callback(new Error('Venues.getLists: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getLists:venueId: ' + venueId);
-    logger.debug('getLists:params: ' + util.inspect(params));
-    getVenueAspect(venueId, 'listed', params, accessToken, callback)
-  }
-
-  /**
-   * Retrieve Stats for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/stats
-   */
-  function getStats(venueId, params, accessToken, callback) {
-    logger.enter('getStats');
-
-    if (!venueId) {
-      logger.error('getStats: venueId is required.');
-      callback(new Error('Venues.getStats: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getStats:venueId: ' + venueId);
-    logger.debug('getStats:params: ' + util.inspect(params));
-    getVenueAspect(venueId, 'stats', params, accessToken, callback)
-  }
+    core.callApi(
+      '/venues/explore',
+      accessToken,
+      { near: place, ...sentParams },
+      callback
+    );
+  };
 
   /**
    * Retrieve Photos for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [group='venue'] The type of photos to retrieve. Refer to Foursquare documentation for details
-   * on currently supported groups.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user. NOTE: This may or may
-   * not be required for certain types of photos associated to the venue. Refer to the Foursquare documentation for
-   * details.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/photos
    */
-  function getPhotos(venueId, group, params, accessToken, callback) {
-    logger.enter('getPhotos');
-
-    if (!venueId) {
-      logger.error('getPhotos: venueId is required.');
-      callback(new Error('Venues.getPhotos: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getPhotos:venueId: ' + venueId);
-    logger.debug('getPhotos:group: ' + group);
-    logger.debug('getPhotos:params: ' + util.inspect(params));
-    params = params || {};
-    params.group = group || 'venue';
-    getVenueAspect(venueId, 'photos', params, accessToken, callback)
-  }
+  const getPhotos = (
+    venueId: string,
+    params: ?{
+      group?: 'checkin' | 'venue',
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getPhotos';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'photos',
+      params,
+      accessToken,
+      callback
+    );
+  };
 
   /**
-   * Retrieve Links for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/links
+   * Retrieve Tips for a Foursquare Venue.
    */
-  function getLinks(venueId, accessToken, callback) {
-    logger.enter('getLinks');
-
-    if (!venueId) {
-      logger.error('getLinks: venueId is required.');
-      callback(new Error('Venues.getLinks: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getLinks:venueId: ' + venueId);
-    getVenueAspect(venueId, 'links', {}, accessToken, callback)
-  }
+  const getTips = (
+    venueId: string,
+    params: ?{
+      sort?: 'friends' | 'recent' | 'popular',
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getTips';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'tips',
+      params,
+      accessToken,
+      callback
+    );
+  };
 
   /**
-   * Retrieve Events for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/events
+   * Retrieve hours for a Foursquare Venue.
    */
-  function getEvents(venueId, accessToken, callback) {
-    logger.enter('getEvents');
-
-    if (!venueId) {
-      logger.error('getEvents: venueId is required.');
-      callback(new Error('Venues.getEvents: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getEvents:venueId: ' + venueId);
-    getVenueAspect(venueId, 'events', {}, accessToken, callback)
-  }
-
-  /**
-   * Retrieve Likes for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/likes
-   */
-  function getLikes(venueId, accessToken, callback) {
-    logger.enter('getLikes');
-
-    if (!venueId) {
-      logger.error('getLikes: venueId is required.');
-      callback(new Error('Venues.getLikes: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getLikes:venueId: ' + venueId);
-    getVenueAspect(venueId, 'likes', {}, accessToken, callback)
-  }
-
-  /**
-   * Retrieve Hours for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/hours
-   */
-  function getHours(venueId, accessToken, callback) {
-    logger.enter('getHours');
-
-    if (!venueId) {
-      logger.error('getHours: venueId is required.');
-      callback(new Error('Venues.getHours: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getHours:venueId: ' + venueId);
-    getVenueAspect(venueId, 'hours', {}, accessToken, callback)
-  }
-
-  /**
-   * Retrieve a list of venues similar to the specified venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/similar
-   */
-  function getSimilar(venueId, accessToken, callback) {
-    logger.enter('getSimilar');
-
-    if (!venueId) {
-      logger.error('getSimilar: venueId is required.');
-      callback(new Error('Venues.getSimilar: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getSimilar:venueId: ' + venueId);
-    getVenueAspect(venueId, 'similar', {}, accessToken, callback)
-  }
+  const getHours = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getHours';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'hours',
+      params,
+      accessToken,
+      callback
+    );
+  };
 
   /**
    * Retrieve the menu for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} venueId The id of a Foursquare Venue.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/menu
    */
-  function getMenu(venueId, accessToken, callback) {
-    logger.enter('getMenu');
-
-    if (!venueId) {
-      logger.error('getMenu: venueId is required.');
-      callback(new Error('Venues.getMenu: venueId is required.'));
-      return;
-    }
-
-    logger.debug('getMenu:venueId: ' + venueId);
-    getVenueAspect(venueId, 'menu', {}, accessToken, callback)
-  }
+  const getMenu = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getMenu';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'menu',
+      params,
+      accessToken,
+      callback
+    );
+  };
 
   /**
-   * Retrieve the menu for a Foursquare Venue.
-   * @memberof module:node-foursquare/Venues
-   * @param {String|Array} venueIds The id of a Foursquare Venue or an array of Venue IDs.
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/timeseries
+   * Retrieve the links associated with a Foursquare Venue.
    */
-  function getTimeseries(venueIds, params, accessToken, callback) {
-    logger.enter('getTimeseries');
-
-    if (!venueIds) {
-      logger.error('getTimeseries: venueIds is required.');
-      callback(new Error('Venues.getTimeseries: venueIds is required.'));
-      return;
-    }
-    logger.debug('getTimeseries:venueIds: ' + venueIds);
-    venueIds = [].concat(venueIds);
-    venueIds = venueIds.join(',');
-    getVenueAspect(venueIds, 'timeseries', params, accessToken, callback)
-  }
+  const getLinks = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getLinks';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'links',
+      params,
+      accessToken,
+      callback
+    );
+  };
 
   /**
-   * Retrieve a list of venues a user manages.
-   * @memberof module:node-foursquare/Venues
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/managed
+   * Get Trending Venues at a location
    */
-  function getManaged(accessToken, callback) {
-    logger.enter('getManaged');
-    core.callApi('/venues/managed', accessToken, {}, callback);
+  function getLocationTrending(
+    location: LocationParameter,
+    params: {
+      limit?: number,
+      radius?: number,
+    } = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) {
+    const method = 'getLocationTrending';
+    logger.enter(method);
+
+    const locationParam = locations.getLocationAPIParameter(
+      { location },
+      method,
+      'Venues',
+      logger,
+      callback
+    );
+
+    if (!locationParam) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.callApi(
+      '/venues/trending',
+      accessToken,
+      {
+        ...locationParam,
+        ...params,
+      },
+      callback
+    );
   }
+
+  const getNearTrending = (
+    place: string,
+    params: {
+      limit?: number,
+      radius?: number,
+    } = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'searchNear';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ place }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      {
+        near: place,
+        ...params,
+      },
+      callback
+    );
+  };
 
   /**
-   * Search Foursquare Venues for autocomplete.
-   * @memberof module:node-foursquare/Venues
-   * @param {String|Number} lat The latitude of the location around which to search.
-   * @param {String|Number} lng The longitude of the location around which to search.
-   * @param {String} query Query parameter to search against
-   * @param {Object} [params] An object containing additional parameters. Refer to Foursquare documentation for details
-   * on currently supported parameters.
-   * @param {String} [accessToken] The access token provided by Foursquare for the current user.
-   * @param {Function} callback The function to call with results, function({Error} error, {Object} results).
-   * @see https://developer.foursquare.com/docs/venues/suggestcompletion
+   * Get a list of mini-venues partially matching the search term, near a
+   * location.
    */
-  function getSuggestcompletion(lat, lng, query, params, accessToken, callback) {
-    logger.enter('suggestComplete');
-    params = params || {};
+  function getLocationSuggestCompletion(
+    location: LocationParameter,
+    query: string,
+    params: {
+      limit?: number,
+      radius?: number,
+    } = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) {
+    const method = 'getLocationSuggestCompletion';
+    logger.enter(method);
 
-    logger.debug('getSuggestcompletion:params: ' + util.inspect(params));
-    
-    if (!query || query.length < 3) {
-      logger.error('Query is required and must be at least 3 characters long.');
-      callback(new Error('Venues.getSuggestcompletion: Query is required and must be at least 3 characters long.'));
+    const locationParam = locations.getLocationAPIParameter(
+      { location },
+      method,
+      'Venues',
+      logger,
+      callback
+    );
+
+    if (!locationParam) {
       return;
     }
-    
-    if (!lat || !lng) {
-      if (!params.near) {
-        logger.error('Either lat and lng or near are required as parameters.');
-        callback(new Error('Venues.getSuggestcompletion: near must be specified as a parameter if lat and lng are not set.'));
-        return;
-      }
-    } else {      
-      params.ll = lat + ',' + lng;
-    }
 
-    if(!query) {
-      logger.error('Query is a required parameter.');
-      callback(new Error('Venues.getSuggestcompletion: query is a required parameter.'));
-      return;
-    }
-    params.query = query;
+    logHelper.debugParams(params, method);
 
-    logger.debug('getSuggestcompletion:lat: ' + lat);
-    logger.debug('getSuggestcompletion:lng: ' + lng);
-    logger.debug('getSuggestcompletion:query: ' + query);
-    core.callApi('/venues/suggestcompletion', accessToken, params, callback);
+    core.callApi(
+      '/venues/suggestcompletion',
+      accessToken,
+      {
+        ...locationParam,
+        ...params,
+      },
+      callback
+    );
   }
+
+  const getNearSuggestCompletion = (
+    place: string,
+    query: string,
+    params: {
+      limit?: number,
+      radius?: number,
+    } = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getNearTrending';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ place }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.callApi(
+      '/venues/search',
+      accessToken,
+      {
+        near: place,
+        ...params,
+      },
+      callback
+    );
+  };
+
+  const getBoxedSuggestCompletion = (
+    northEast: LatLngParameter,
+    southWest: LatLngParameter,
+    query: string,
+    params: ?{
+      limit?: number,
+    } = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getBoxedSuggestCompletion';
+    logger.enter(method);
+
+    logHelper.debugParams({ northEast, southWest, ...params }, method);
+
+    const passedParams = {
+      ne: northEast.lat + ',' + northEast.long,
+      sw: southWest.lat + ',' + southWest.long,
+      ...params,
+    };
+
+    core.callApi(
+      '/venues/suggestcompletion',
+      accessToken,
+      { intent: 'browse', ...passedParams },
+      callback
+    );
+  };
+
+  /**
+   * Retrieve the likes associated with a Foursquare Venue.
+   */
+  const getLikes = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getLikes';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'likes',
+      params,
+      accessToken,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve venues similar to a Foursquare Venue.
+   */
+  const getSimilar = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getSimilar';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'similar',
+      params,
+      accessToken,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve events at a Foursquare Venue.
+   */
+  const getEvents = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getEvents';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'evengts',
+      params,
+      accessToken,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve venues commonly followed by a Foursquare Venue.
+   */
+  const getNextVenue = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getNextVenue';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'nextvenue',
+      params,
+      accessToken,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve lists where a Foursquare Venue appears.
+   */
+  const getListed = (
+    venueId: string,
+    params: ?{
+      group?: 'created' | 'edited' | 'followed' | 'friends' | 'other',
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getListed';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      'listed',
+      params,
+      accessToken,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve daily venue stats for a list of venues over a time range.
+   */
+  const getTimeSeriesStats = (
+    venueIds: Array<string>,
+    startAt: number,
+    params: ?{
+      endAt?: number,
+      fields?: Array<
+        | 'totalCheckins'
+        | 'newCheckins'
+        | 'uniqueVisitors'
+        | 'sharing'
+        | 'genders'
+        | 'ages'
+        | 'hours'
+      >,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getTimeSeries';
+    logger.enter(method);
+
+    if (
+      !logHelper.debugAndCheckParams({ venueIds, startAt }, method, callback)
+    ) {
+      return;
+    }
+    logHelper.debugParams(params, method);
+    let { fields, ...otherParams } = params || {};
+    fields = fields || [];
+    core.callApi(
+      '/venues/timeseries',
+      accessToken,
+      {
+        fields: fields.join(','),
+        startAt,
+        ...otherParams,
+      },
+      callback
+    );
+  };
+
+  const getStats = (
+    venueId: string,
+    params: ?{
+      startAt?: number,
+      endAt?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getTimeSeries';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
+      return;
+    }
+    logHelper.debugParams(params, method);
+    core.callApi(
+      path.join('/venues', venueId, 'stats'),
+      accessToken,
+      params,
+      callback
+    );
+  };
+
+  /**
+   * Retrieve a list of venues the current user manages.
+   */
+  const getManagedVenues = (
+    params: ?{
+      limit?: number,
+      offset?: number,
+    } = {},
+    accessToken: string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getCategories';
+    logger.enter(method);
+    logHelper.debugParams(params, method);
+    core.callApi('/venues/managed', accessToken, params, callback);
+  };
+
+  const like = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) => {
+    const method = 'like';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      path.join('/venues', venueId, 'like'),
+      accessToken,
+      { set: 1 },
+      callback
+    );
+  };
+
+  const unlike = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: string,
+    callback: CallbackFunction = empty
+  ) => {
+    const method = 'unlike';
+    logger.enter(method);
+
+    if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
+      return;
+    }
+
+    logHelper.debugParams(params, method);
+
+    core.postApi(
+      path.join('/venues', venueId, 'like'),
+      accessToken,
+      { set: 0 },
+      callback
+    );
+  };
 
   return {
-    'explore' : explore,
-    'getCategories' : getCategories,
-    'getEvents' : getEvents,
-    'getHereNow' : getHereNow,
-    'getHours' : getHours,
-    'getLikes' : getLikes,
-    'getLinks' : getLinks,
-    'getListed' : getListed,
-    'getManaged' : getManaged,
-    'getMenu' : getMenu,
-    'getPhotos' : getPhotos,
-    'getSimilar' : getSimilar,
-    'getStats' : getStats,
-    'getSuggestcompletion': getSuggestcompletion,
-    'getTimeseries' : getTimeseries,
-    'getTips' : getTips,
-    'getTrending' : getTrending,
-    'getVenue' : getVenue,
-    'getVenueAspect' : getVenueAspect,
-    'search' : search
-  }
-};
+    browseBox,
+    browseCircle,
+    exploreLocation,
+    exploreNear,
+    getBoxedSuggestCompletion,
+    getCategories,
+    getEvents,
+    getHours,
+    getLikes,
+    getLinks,
+    getListed,
+    getLocationSuggestCompletion,
+    getLocationTrending,
+    getManagedVenues,
+    getMenu,
+    getNearSuggestCompletion,
+    getNearTrending,
+    getNextVenue,
+    getPhotos,
+    getSimilar,
+    getStats,
+    getTimeSeriesStats,
+    getTips,
+    globalSearch,
+    like,
+    match,
+    searchLocation,
+    searchNear,
+    unlike,
+  };
+}

@@ -7,8 +7,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var isObject = function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
-},
-    mergeDeep = function mergeDeep(target, source) {
+};
+
+var mergeDeep = function mergeDeep(target, source) {
   var output = Object.assign({}, target);
   if (isObject(target) && isObject(source)) {
     Object.keys(source).forEach(function (key) {

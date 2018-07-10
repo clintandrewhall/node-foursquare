@@ -9,10 +9,8 @@ export type WinstonLoggerName =
   | 'events'
   | 'lists'
   | 'photos'
-  | 'settings'
-  | 'specials'
   | 'tips'
-  | 'updates'
+  | 'users'
   | 'venues';
 
 export type WinstonLoggerLevel =
