@@ -6,29 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _path = require('path');
+exports.default = function () {
+  var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-var _path2 = _interopRequireDefault(_path);
-
-var _core = require('./core');
-
-var _core2 = _interopRequireDefault(_core);
-
-var _locations = require('./util/locations');
-
-var _locations2 = _interopRequireDefault(_locations);
-
-var _callbacks = require('./util/callbacks');
-
-var _logHelper = require('./util/logHelper');
-
-var _logHelper2 = _interopRequireDefault(_logHelper);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
-
-exports.default = function (config) {
+  var config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {});
   var core = (0, _core2.default)(config);
   var logger = core.getLogger('checkins');
   var logHelper = new _logHelper2.default('Checkins', logger);
@@ -153,3 +134,33 @@ exports.default = function (config) {
     unlike
   };
 };
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _core = require('./core');
+
+var _core2 = _interopRequireDefault(_core);
+
+var _locations = require('./util/locations');
+
+var _locations2 = _interopRequireDefault(_locations);
+
+var _callbacks = require('./util/callbacks');
+
+var _configDefault = require('./config-default');
+
+var _configDefault2 = _interopRequireDefault(_configDefault);
+
+var _logHelper = require('./util/logHelper');
+
+var _logHelper2 = _interopRequireDefault(_logHelper);
+
+var _mergeDeep = require('./util/mergeDeep');
+
+var _mergeDeep2 = _interopRequireDefault(_mergeDeep);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }

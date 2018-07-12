@@ -105,7 +105,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
    */
   function searchLocation(
     location: LocationParameter,
-    params: ?AllSearchParams & {} = {},
+    params: ?AllSearchParams & any = {},
     accessToken: ?string,
     callback: CallbackFunction
   ) {
@@ -137,13 +137,25 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       );
     }
 
+    let sentParams = {};
+
+    if (categoryIds) {
+      sentParams.categoryId = categoryIds.join(',');
+    }
+
+    if (radius) {
+      sentParams.radius = radius;
+    }
+
+    if (query) {
+      sentParams.query = query;
+    }
+
     core.callApi(
       '/venues/search',
       accessToken,
       {
-        categoryId: categoryIds ? categoryIds.join(',') : '',
-        radius,
-        query,
+        ...sentParams,
         ...locationParam,
         ...otherParams,
       },
@@ -157,7 +169,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'searchLocation';
+    const method = 'searchNear';
     logger.enter(method);
 
     params = params || {};
@@ -173,14 +185,26 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       );
     }
 
+    let sentParams = {};
+
+    if (categoryIds) {
+      sentParams.categoryId = categoryIds.join(',');
+    }
+
+    if (radius) {
+      sentParams.radius = radius;
+    }
+
+    if (query) {
+      sentParams.query = query;
+    }
+
     core.callApi(
       '/venues/search',
       accessToken,
       {
         near: place,
-        categoryId: categoryIds ? categoryIds.join(',') : '',
-        radius,
-        query,
+        ...sentParams,
         ...otherParams,
       },
       callback
@@ -201,7 +225,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     core.callApi(
       '/venues/search',
       accessToken,
-      { intent: global, query, ...params },
+      { intent: 'global', query, ...params },
       callback
     );
   };
@@ -234,15 +258,13 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
 
   const browseCircle = (
     location: LocationParameter,
-    radius: ?number,
+    radius: number,
     params: ?CategorizedSearchParams = {},
     accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'browseBox';
+    const method = 'browseCircle';
     logger.enter(method);
-
-    logHelper.debugParams({ location, radius, ...params }, method);
 
     const locationParam = locations.getLocationAPIParameter(
       { location },
@@ -255,6 +277,8 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     if (!locationParam) {
       return;
     }
+
+    logHelper.debugParams({ locationParam, radius, ...params }, method);
 
     core.callApi(
       '/venues/search',
@@ -271,7 +295,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'browseBox';
+    const method = 'match';
     logger.enter(method);
 
     logHelper.debugParams({ location, query, ...params }, method);
@@ -301,8 +325,9 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
    */
   const exploreLocation = (
     location: LocationParameter,
+    radius: number,
     params: ?ExploreParams = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'exploreLocation';
@@ -357,7 +382,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const exploreNear = (
     place: string,
     params: ?ExploreParams = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'exploreNear';
@@ -404,7 +429,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       limit?: number,
       offset?: number,
     } = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getPhotos';
@@ -429,7 +454,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       limit?: number,
       offset?: number,
     } = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getTips';
@@ -450,7 +475,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getHours = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getHours';
@@ -471,7 +496,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getMenu = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getMenu';
@@ -492,7 +517,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getLinks = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getLinks';
@@ -512,7 +537,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
    */
   function getLocationTrending(
     location: LocationParameter,
-    params: {
+    params: ?{
       limit?: number,
       radius?: number,
     } = {},
@@ -549,14 +574,14 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
 
   const getNearTrending = (
     place: string,
-    params: {
+    params: ?{
       limit?: number,
       radius?: number,
     } = {},
     accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'searchNear';
+    const method = 'getNearTrending';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ place }, method, callback)) {
@@ -583,7 +608,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   function getLocationSuggestCompletion(
     location: LocationParameter,
     query: string,
-    params: {
+    params: ?{
       limit?: number,
       radius?: number,
     } = {},
@@ -605,12 +630,13 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       return;
     }
 
-    logHelper.debugParams(params, method);
+    logHelper.debugParams({ query, ...params }, method);
 
     core.callApi(
       '/venues/suggestcompletion',
       accessToken,
       {
+        query,
         ...locationParam,
         ...params,
       },
@@ -621,14 +647,14 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getNearSuggestCompletion = (
     place: string,
     query: string,
-    params: {
+    params: ?{
       limit?: number,
       radius?: number,
     } = {},
     accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'getNearTrending';
+    const method = 'getNearSuggestCompletion';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ place }, method, callback)) {
@@ -672,7 +698,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     core.callApi(
       '/venues/suggestcompletion',
       accessToken,
-      { intent: 'browse', ...passedParams },
+      { intent: 'browse', query, ...passedParams },
       callback
     );
   };
@@ -683,7 +709,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getLikes = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getLikes';
@@ -704,7 +730,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getSimilar = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getSimilar';
@@ -725,7 +751,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const getEvents = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getEvents';
@@ -733,7 +759,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     return getSimpleEndpoint(
       venueId,
       method,
-      'evengts',
+      'events',
       params,
       accessToken,
       callback
@@ -743,18 +769,18 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   /**
    * Retrieve venues commonly followed by a Foursquare Venue.
    */
-  const getNextVenue = (
+  const getNextVenues = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'getNextVenue';
+    const method = 'getNextVenues';
     logger.enter(method);
     return getSimpleEndpoint(
       venueId,
       method,
-      'nextvenue',
+      'nextvenues',
       params,
       accessToken,
       callback
@@ -771,7 +797,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       limit?: number,
       offset?: number,
     } = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
     const method = 'getListed';
@@ -804,10 +830,10 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
         | 'hours'
       >,
     } = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'getTimeSeries';
+    const method = 'getTimeSeriesStats';
     logger.enter(method);
 
     if (
@@ -822,6 +848,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       '/venues/timeseries',
       accessToken,
       {
+        venueId: venueIds.join(','),
         fields: fields.join(','),
         startAt,
         ...otherParams,
@@ -836,10 +863,10 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       startAt?: number,
       endAt?: number,
     } = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'getTimeSeries';
+    const method = 'getStats';
     logger.enter(method);
 
     if (!logHelper.debugAndCheckParams({ venueId }, method, callback)) {
@@ -862,10 +889,10 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       limit?: number,
       offset?: number,
     } = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction
   ) => {
-    const method = 'getCategories';
+    const method = 'getManagedVenues';
     logger.enter(method);
     logHelper.debugParams(params, method);
     core.callApi('/venues/managed', accessToken, params, callback);
@@ -874,7 +901,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const like = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction = empty
   ) => {
     const method = 'like';
@@ -897,7 +924,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   const unlike = (
     venueId: string,
     params: ?{} = {},
-    accessToken: string,
+    accessToken: ?string,
     callback: CallbackFunction = empty
   ) => {
     const method = 'unlike';
@@ -935,7 +962,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     getMenu,
     getNearSuggestCompletion,
     getNearTrending,
-    getNextVenue,
+    getNextVenues,
     getPhotos,
     getSimilar,
     getStats,

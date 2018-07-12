@@ -38,7 +38,7 @@ var LogHelper = function () {
         }
         debug += `${key}=${JSON.stringify(params[key])}`;
       }
-      this.logger.debug(`${this.moduleName}.${method}=>${debug}`);
+      this.logger.debug(`${this.moduleName}.${method} => ${debug}`);
     }
   }, {
     key: 'debugAndCheckParams',

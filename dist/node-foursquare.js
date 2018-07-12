@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.Foursquare = undefined;
 
 var _querystring = require('querystring');
 
@@ -56,11 +57,20 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 var version = '07102018';
 
+var Foursquare = exports.Foursquare = {
+  Checkins: _checkins2.default,
+  Lists: _lists2.default,
+  Photos: _photos2.default,
+  Tips: _tips2.default,
+  Users: _users2.default,
+  Venues: _venues2.default
+};
+
 exports.default = function () {
   var getAccessToken = function () {
     var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(providedParams) {
       var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _callbacks.empty;
-      var code, params, response, ok, status, result, access_token;
+      var code, params, response, ok, result, access_token;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -78,7 +88,7 @@ exports.default = function () {
 
             case 4:
               response = _context.sent;
-              ok = response.ok, status = response.status;
+              ok = response.ok;
               _context.next = 8;
               return response.json();
 

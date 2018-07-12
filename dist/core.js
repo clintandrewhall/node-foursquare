@@ -6,67 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _querystring = require('querystring');
+exports.default = function () {
+  var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-var _querystring2 = _interopRequireDefault(_querystring);
-
-var _util = require('util');
-
-var _util2 = _interopRequireDefault(_util);
-
-var _url = require('url');
-
-var _url2 = _interopRequireDefault(_url);
-
-var _winston = require('winston');
-
-var _winston2 = _interopRequireDefault(_winston);
-
-var _events = require('events');
-
-var _events2 = _interopRequireDefault(_events);
-
-var _request = require('request');
-
-var _request2 = _interopRequireDefault(_request);
-
-var _callbacks = require('./util/callbacks');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var format = _winston2.default.format;
-var combine = format.combine,
-    colorize = format.colorize,
-    timestamp = format.timestamp,
-    label = format.label,
-    printf = format.printf;
-
-
-var levels = {
-  detail: 6,
-  trace: 5,
-  debug: 4,
-  enter: 3,
-  info: 2,
-  warn: 1,
-  error: 0
-};
-
-_winston2.default.addColors({
-  debug: 'blue',
-  detail: 'grey',
-  enter: 'inverse',
-  error: 'red',
-  info: 'green',
-  trace: 'white',
-  warn: 'yellow'
-});
-
-var loggerFormat = printf(function (info) {
-  return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
-});
-
-exports.default = function (config) {
+  var config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {});
   var secrets = config.secrets,
       winston = config.winston;
   var clientId = secrets.clientId,
@@ -139,7 +82,7 @@ exports.default = function (config) {
       if (error) {
         callback(error, statusCode);
       } else {
-        logger.trace(`invokeApi: Result: ${_util2.default.inspect(body)}`);
+        logger.detail(`invokeApi: Result: ${_util2.default.inspect(body)}`);
         callback(null, statusCode, body);
       }
     });
@@ -274,3 +217,71 @@ exports.default = function (config) {
     postApi
   };
 };
+
+var _querystring = require('querystring');
+
+var _querystring2 = _interopRequireDefault(_querystring);
+
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
+
+var _url = require('url');
+
+var _url2 = _interopRequireDefault(_url);
+
+var _winston = require('winston');
+
+var _winston2 = _interopRequireDefault(_winston);
+
+var _events = require('events');
+
+var _events2 = _interopRequireDefault(_events);
+
+var _request = require('request');
+
+var _request2 = _interopRequireDefault(_request);
+
+var _callbacks = require('./util/callbacks');
+
+var _configDefault = require('./config-default');
+
+var _configDefault2 = _interopRequireDefault(_configDefault);
+
+var _mergeDeep = require('./util/mergeDeep');
+
+var _mergeDeep2 = _interopRequireDefault(_mergeDeep);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var format = _winston2.default.format;
+var combine = format.combine,
+    colorize = format.colorize,
+    timestamp = format.timestamp,
+    label = format.label,
+    printf = format.printf;
+
+
+var levels = {
+  detail: 6,
+  trace: 5,
+  debug: 4,
+  enter: 3,
+  info: 2,
+  warn: 1,
+  error: 0
+};
+
+_winston2.default.addColors({
+  debug: 'blue',
+  detail: 'grey',
+  enter: 'inverse',
+  error: 'red',
+  info: 'green',
+  trace: 'white',
+  warn: 'yellow'
+});
+
+var loggerFormat = printf(function (info) {
+  return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
+});

@@ -41,9 +41,7 @@ var createLocationAPIParameters = function createLocationAPIParameters(location)
       locationParams.altitudeAccuracy = _altitudeAccuracy;
     }
 
-    return {
-      location: locationParams
-    };
+    return locationParams;
   }
 
   return null;

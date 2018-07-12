@@ -51,9 +51,7 @@ const createLocationAPIParameters = (
       locationParams.altitudeAccuracy = altitudeAccuracy;
     }
 
-    return {
-      location: locationParams,
-    };
+    return locationParams;
   }
 
   return null;

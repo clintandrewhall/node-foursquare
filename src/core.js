@@ -134,7 +134,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
       if (error) {
         callback(error, statusCode);
       } else {
-        logger.trace(`invokeApi: Result: ${util.inspect(body)}`);
+        logger.detail(`invokeApi: Result: ${util.inspect(body)}`);
         callback(null, statusCode, body);
       }
     });

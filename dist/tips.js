@@ -4,7 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = function (config) {
+exports.default = function () {
+  var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  var config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {});
   var core = (0, _core2.default)(config);
   var logger = core.getLogger('tips');
   var logHelper = new _logHelper2.default('Tips', logger);
@@ -56,5 +59,13 @@ var _callbacks = require('./util/callbacks');
 var _logHelper = require('./util/logHelper');
 
 var _logHelper2 = _interopRequireDefault(_logHelper);
+
+var _configDefault = require('./config-default');
+
+var _configDefault2 = _interopRequireDefault(_configDefault);
+
+var _mergeDeep = require('./util/mergeDeep');
+
+var _mergeDeep2 = _interopRequireDefault(_mergeDeep);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

@@ -4,21 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _path = require('path');
+exports.default = function () {
+  var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-var _path2 = _interopRequireDefault(_path);
-
-var _core = require('./core');
-
-var _core2 = _interopRequireDefault(_core);
-
-var _logHelper = require('./util/logHelper');
-
-var _logHelper2 = _interopRequireDefault(_logHelper);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = function (config) {
+  var config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {});
   var core = (0, _core2.default)(config);
   var logger = core.getLogger('photos');
   var logHelper = new _logHelper2.default('Photos', logger);
@@ -44,3 +33,25 @@ exports.default = function (config) {
     get
   };
 };
+
+var _path = require('path');
+
+var _path2 = _interopRequireDefault(_path);
+
+var _core = require('./core');
+
+var _core2 = _interopRequireDefault(_core);
+
+var _logHelper = require('./util/logHelper');
+
+var _logHelper2 = _interopRequireDefault(_logHelper);
+
+var _configDefault = require('./config-default');
+
+var _configDefault2 = _interopRequireDefault(_configDefault);
+
+var _mergeDeep = require('./util/mergeDeep');
+
+var _mergeDeep2 = _interopRequireDefault(_mergeDeep);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
