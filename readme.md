@@ -2,9 +2,222 @@
 
 Fault-tolerant Foursquare API wrapper for Node JS.
 
+![GitHub package version](https://img.shields.io/github/package-json/v/clintandrewhall/node-foursquare.svg?style=for-the-badge)
+![CircleCI](https://img.shields.io/circleci/project/github/clintandrewhall/node-foursquare.svg?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/clintandrewhall/node-foursquare.svg?style=for-the-badge)
+
+![node](https://img.shields.io/node/v/node-foursquare.svg?style=for-the-badge)
+![David](https://img.shields.io/david/clintandrewhall/node-foursquare.svg?style=for-the-badge)
+![David](https://img.shields.io/david/dev/clintandrewhall/node-foursquare.svg?style=for-the-badge)
+
 ## Install
 
     npm install node-foursquare
+
+    yarn install node-foursquare
+
+## About
+
+Version 0.4.x is a full rewrite of the older version of this library, using ES6,
+Flow, Babel, etc to create a more modern API library.
+
+## Use
+
+The Foursquare module takes a configuration parameter containing logging and
+client keys. It also supports alternate Foursquare URLs if necessary, (but that
+is unlikely). `config-default.js` contains a full configuration which is
+merged with the provided configuration.
+
+To use the library, you must supply, at a minimum, the following:
+
+    const config = {
+      'secrets' : {
+        'clientId' : 'CLIENT_ID',
+        'clientSecret' : 'CLIENT_SECRET',
+        'redirectUrl' : 'REDIRECT_URL'
+      }
+    }
+
+    import nodeFoursquare from 'node-foursquare';
+    const Foursquare = nodeFoursquare(config);
+
+Once instantiated, `node-foursquare` provides you with some OAuth help to get
+an access token. You can set up endpoints on your own server that match your
+OAuth configuration in Foursquare. Using Express, for example:
+
+    const Foursquare = nodeFoursquare(config);
+    const app = express();
+
+    app.get('/', (req: express$Request, res: express$Response) => {
+      const url = Foursquare.getAuthClientRedirectUrl();
+      res.writeHead(303, { location: url });
+      res.end();
+    });
+
+    app.get('/callback', (req: express$Request, res: express$Response) => {
+      const code = ((req.query.code: any): string);
+
+      Foursquare.getAccessToken(
+        {
+          code,
+        },
+        (error: ?Error, accessToken: ?string) => {
+          if (error) {
+            res.send(`An error was thrown: ${error.message}`);
+          } else if (!accessToken) {
+            res.send(`No access token was provided`);
+          } else {
+            // Save access token and continue.
+          }
+        }
+      );
+    });
+
+If you already have the ability to glean an access token, (e.g. you have your
+own OAuth, or the key is stored in the database), you can instantiate the
+entire library, or just the module you want:
+
+    import nodeFoursquare from 'node-foursquare';
+    import config from './config';
+
+    const Foursquare = nodeFoursquare(config);
+    const foo = Foursquare.Venues.search(...);
+    const bar = Foursquare.Tips.getByID(...);
+
+    // ...or
+
+    import { Foursquare } from './../src/node-foursquare';
+    import config from './config';
+
+    const Venues = Foursquare.Venues(config);
+    const foo = Venues.search(...);
+
+    const Tips = Foursquare.Tips(config);
+    const bar = Tips.getByID(...);
+
+## Foursquare API Version and Deprecation Warnings
+
+Foursquare allows consumers to specify a 'version' of their API to invoke,
+based on the date that version became active. For example, passing a version
+string of '20110101' uses the API as of Jan 1, 2011. By default, this library
+will use a version of '20140806', the minimum date for the Foursquare/Swarm
+migration.
+
+To enable a different version of the API, add the following to configuration:
+
+    const config = {
+      ...
+      foursquare : {
+        ...
+        version : '20140806',
+        ...
+      }
+      ...
+    }
+
+The Foursquare API now supports a 'mode' parameter, either 'foursquare' or
+'swarm'. This parameter is now required. By default, this library will assume
+'foursquare'. You can change this through configuration:
+
+    const config = {
+      ...
+      foursquare : {
+        ...
+        mode : 'swarm',
+        ...
+      }
+      ...
+    }
+
+When using an older API, Foursquare will provide deprecation warnings, (if
+applicable). By default, this library will write these warnings to the log,
+which will only be visible if logging for 'node-foursquare' is turned on, (see
+'Logging', below).
+
+You can configure this library to throw an error instead:
+
+    const config = {
+      ...
+      foursquare : {
+        ...
+        warnings : 'ERROR',
+        ...
+      }
+      ...
+    }
+
+## Logging
+
+This module uses winston to log events. In configuration, you can set the
+default logging level, (which is `warn`), and transports, (which includes
+console by default). Each module within the library has its own named logger,
+which can be set to different levels:
+
+    const config = {
+      winston : {
+        all: {
+          level: 'warn',
+        },
+        venues: {
+          level: 'trace',
+          transports: [winston.transports.File()]
+        }
+    }
+
+## I18n
+
+Add locale param to config:
+
+    const config = {
+      ...
+      locale : 'it'
+      ...
+    }
+
+Valid locales are listed in https://developer.foursquare.com/overview/versioning
+
+## Testing
+
+Testing in node-foursquare has been dramatically improved, and is now run in CI,
+using Jest. It uses CasperJS to independently log into Foursquare and get
+the access token redirect... therefore, you'll need to supply credentials if
+you wish to test independently.
+
+The tests run using environment variables:
+
+    CLIENT_ID=     Testing Client ID
+    CLIENT_SECRET= Testing Client Secret
+    REDIRECT_URL=  The redirect URL for the testing console, (usually localhost).
+    VERSION=       The override Version, if applicable
+
+    // Test User Credentials and ID
+    TEST_EMAIL=     Test User Email
+    TEST_PASSWORD=  Test User Password
+    TEST_USER_ID=   486035012
+
+    // Checkin Module Testing
+    TEST_CHECKIN= Checkin of which the Test User has visibility.
+
+    // Lists Module Testing
+    TEST_LIST_ID=        ID of a list visible to the test user.
+    TEST_LIST_NAME=      Name of a list visible to the test user.
+    TEST_LIST_USER_ID=   User ID of the list owner.
+    TEST_LIST_USER_NAME= User name of the list owner.
+
+    // Photo Module Testing
+    TEST_PHOTO_ID= ID of a photo visibile to the test user.
+
+    // Tip Module Testing
+    TEST_TIP_ID= ID of a tip visible to the test user.
+
+    // Users Module Testing
+    TEST_USERS_USER_ID= ID of a friend to the test user.
+
+    // Venues Module Testing
+    TEST_VENUES_PLACE=             City and State
+    TEST_VENUES_VENUE_ID=          ID of a public venue
+    TEST_VENUES_VENUE_SHORT_QUERY= A short query, (e.g. 'Harr')
+    TEST_VENUES_VENUE_LONG_QUERY=  A long query, (e.g. 'Harrys Bar')
 
 ## Version History
 
@@ -27,173 +240,12 @@ Fault-tolerant Foursquare API wrapper for Node JS.
 * v0.2.1 - Unit test fixes and bugs/merges
 * v0.3.0 - Remove deprecated Foursquare API endpoints, support new parameters.
 * v0.3.2 - Latest updates and pull requests
-* v0.4.0 - (in progress) Refactor and update to latest API.
-
-## Use
-
-The Foursquare module takes a configuration parameter containing logging and
-client keys. It also supports alternate Foursquare URLs if necessary, (but that
-is unlikely).
-
-    var config = {
-      'secrets' : {
-        'clientId' : 'CLIENT_ID',
-        'clientSecret' : 'CLIENT_SECRET',
-        'redirectUrl' : 'REDIRECT_URL'
-      }
-    }
-
-    var foursquare = require('node-foursquare')(config);
-
-Once instantiated, you just need to set up endpoints on your own server that
-match your OAuth configuration in Foursquare. Using Express, for example:
-
-    var app = express();
-
-    app.get('/login', function(req, res) {
-      res.writeHead(303, { 'location': foursquare.getAuthClientRedirectUrl() });
-      res.end();
-    });
-
-
-    app.get('/callback', function (req, res) {
-      foursquare.getAccessToken({
-        code: req.query.code
-      }, function (error, accessToken) {
-        if(error) {
-          res.send('An error was thrown: ' + error.message);
-        }
-        else {
-          // Save the accessToken and redirect.
-        }
-      });
-    });
-
-## Foursquare API Version and Deprecation Warnings
-
-Foursquare allows consumers to specify a 'version' of their API to invoke,
-based on the date that version became active. For example, passing a version
-string of '20110101' uses the API as of Jan 1, 2011. By default, this library
-will use a version of '20140806', the minimum date for the Foursquare/Swarm
-migration.
-
-To enable a different version of the API, add the following to configuration:
-
-    var config = {
-      ...
-      'foursquare' : {
-        ...
-        'version' : '20140806',
-        ...
-      }
-      ...
-    }
-
-The Foursquare API now supports a 'mode' parameter, either 'foursquare' or
-'swarm'. This parameter is now required. By default, this library will assume
-'foursquare'. You can change this through configuration:
-
-    var config = {
-      ...
-      'foursquare' : {
-        ...
-        'mode' : 'swarm',
-        ...
-      }
-      ...
-    }
-
-When using an older API, Foursquare will provide deprecation warnings, (if
-applicable). By default, this library will write these warnings to the log,
-which will only be visible if logging for 'node-foursquare' is turned on, (see
-'Logging', below).
-
-You can configure this library to throw an error instead:
-
-    var config = {
-      ...
-      'foursquare' : {
-        ...
-        'warnings' : 'ERROR',
-        ...
-      }
-      ...
-    }
-
-## Logging
-
-This module uses winston to log events. By default, the logging level is set to
-'none'. If you want to output logging messages from the different modules of
-this library, you can add overrides to your configuration object. For example,
-to log debug (and higher) messages in Venues and warnings in Core to the console:
-
-    var config = {
-      'winston' : {
-        'loggers': {
-           'core': {
-             'console': {
-               'level': 'warn'
-             }
-           },
-           'venues': {
-             'console': {
-               'level': 'debug'
-             }
-           }
-         }
-      ...
-    }
-
-    var foursquare = require('node-foursquare')(config);
-
-For a list of existing logging points, refer to [config-default.js](https://github.com/clintandrewhall/node-foursquare/blob/master/lib/config-default.js).
-
-For more information, see: https://github.com/flatiron/winston
-
-## I18n
-
-Add locale param to config:
-
-    var config = {
-        ...
-        'locale' : 'it'
-        ...
-    }
-
-Valid locales are listed in https://developer.foursquare.com/overview/versioning
-
-## Testing
-
-To test, you need to create a config.js file in the /test directory as follows:
-
-    module.exports = {
-      'secrets' : {
-        'clientId' : 'YOUR_CLIENT_ID',
-        'clientSecret' : 'YOUR_CLIENT_SECRET',
-        'redirectUrl' : 'http://localhost:3000/callback' // This should also be set in your OAuth profile.
-      }
-    };
-
-Then, simply invoke the test.js file with Node.JS:
-
-    node test.js
-
-If you hit [http://localhost:3000](http://localhost:3000), you'll be redirected
-for an authentication token.
-
-If you hit [http://localhost:3000/test](http://localhost:3000/test), you'll
-test the entire library with no authentication, (and get appropriate errors for
-protected endpoints).
-
-Testing results will be logged to the console.
-
-All tests use examples as suggested by the [Foursquare Endpoint Explorer](https://developer.foursquare.com/docs/explore.html).
+* v0.3.3 - Latest updates and pull requests
+* v0.4.0 - Refactor, modernization and update to latest API.
 
 ## Notes
 
-This module is a read-only subset of the full Foursquare API, but further
-capability, (adding, posting, updating, etc), is forthcoming. Bugs and Pull
-Requests are, of course, accepted! :-)
+Bugs and Pull Requests are, of course, gladly accepted! :-)
 
 This project is a refactoring and enhancement of:
 https://github.com/yikulju/Foursquare-on-node
