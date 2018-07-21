@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 exports.default = function () {
-  var _this = this;
-
   var providedConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
   var config = (0, _mergeDeep2.default)(_configDefault2.default, providedConfig || {});
@@ -102,7 +100,7 @@ exports.default = function () {
         otherParams = _objectWithoutProperties(_params2, ['categoryIds', 'query', 'radius']);
 
     if (radius && !(categoryIds || query)) {
-      _this.logger.error(`Venues: when using radius, either categoryIds or query
+      logger.error(`Venues: when using radius, either categoryIds or query
         is required.`);
       callback(new Error(`Venues.${method}: when using radius, either categoryIds or
           query is required.`));

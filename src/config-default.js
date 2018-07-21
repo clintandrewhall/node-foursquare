@@ -1,6 +1,8 @@
 /* @flow */
 
-const winston = require('winston');
+import winston from 'winston';
+
+import { $winstonTransport } from 'winston';
 
 export type WinstonLoggerName =
   | 'all'

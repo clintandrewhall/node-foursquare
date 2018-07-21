@@ -126,8 +126,7 @@ export default (providedConfig: Object | FoursquareConfig = {}) => {
    * permission to the application.
    */
   function getAuthClientRedirectUrl(): string {
-    return `${authenticateUrl}?client_id=${clientId}&response_type=code
-      &redirect_uri=${redirectUrl}`;
+    return `${authenticateUrl}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUrl}`;
   }
 
   return {

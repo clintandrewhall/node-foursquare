@@ -169,8 +169,7 @@ exports.default = function () {
       authenticateUrl = foursquare.authenticateUrl;
 
   function getAuthClientRedirectUrl() {
-    return `${authenticateUrl}?client_id=${clientId}&response_type=code
-      &redirect_uri=${redirectUrl}`;
+    return `${authenticateUrl}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUrl}`;
   }
 
   return {

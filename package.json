@@ -3,18 +3,8 @@
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
   "version": "0.4.1",
   "main": "index.js",
-  "keywords": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
-  "tags": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
+  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -24,6 +14,9 @@
   },
   "license": "MIT",
   "dependencies": {
+    "deepmerge": "^2.1.1",
+    "flowgen": "^1.2.2",
+    "is-plain-object": "^2.0.4",
     "node-fetch": "^2.1.2",
     "winston": "^3.0.0"
   },
@@ -38,6 +31,7 @@
     "babel-preset-flow": "^6.23.0",
     "babel-preset-stage-0": "^6.24.1",
     "casperjs": "^1.1.4",
+    "del-cli": "^1.1.0",
     "dotenv": "^6.0.0",
     "eslint": "^4.19.1",
     "eslint-config-fbjs": "^2.0.1",
@@ -56,7 +50,9 @@
     "jest-extended": "^0.7.2",
     "phantomjs-prebuilt": "^2.1.16",
     "prettier": "^1.9.2",
-    "regenerator-runtime": "^0.12.0"
+    "regenerator-runtime": "^0.12.0",
+    "replace-in-file": "^3.4.0",
+    "yarn": "^1.7.0"
   },
   "engines": {
     "node": ">= 9.8.0"
@@ -66,10 +62,18 @@
   "scripts": {
     "eslint": "eslint",
     "flow": "flow",
-    "build": "babel src/ -d dist/",
+    "clean": "del-cli ./dist/**",
+    "build":
+      "yarn run clean && yarn run build:babel && yarn run build:flow && yarn run fix-flow-issue-2830",
+    "build:babel": "babel src/ -d dist/",
+    "build:flow":
+      "flow gen-flow-files src --out-dir dist --untyped \".+src/core.js/.+\"",
+    "fix-flow-issue-2830":
+      "replace-in-file \"/default function(\\(.*\\)):/ig\" \"default \\$1 =>\" ./dist/*.js.flow,./dist/util/*.js.flow --isRegex",
     "jest": "jest --runInBand",
-    "pretest": "npm run build",
+    "pretest": "yarn run build",
     "test": "node dist/test",
-    "test-casper": "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
+    "test-casper":
+      "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
   }
 }

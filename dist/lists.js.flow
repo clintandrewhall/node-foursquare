@@ -1,0 +1,14 @@
+// @flow
+
+import mergeDeep from "./util/mergeDeep";
+import defaultConfig from "./config-default";
+import LogHelper from "./util/logHelper";
+import {empty} from "./util/callbacks";
+import type {CallbackFunction} from "./util/callbacks";
+import type {FoursquareConfig} from "./config-default";
+import coreLib from "./core";
+import path from "path";
+declare class Class0 {
+
+}
+declare export default (providedConfig?: Object | {foursquare: {accessTokenUrl: string, apiUrl: string, authenticateUrl: string, mode?: "swarm" | "foursquare", version?: string, warnings: "WARN" | "ERROR"}, locale: string, secrets: {clientId: string, clientSecret: string, redirectUrl: string}, winston: {[_: "all" | "checkins" | "core" | "events" | "lists" | "photos" | "tips" | "users" | "venues"]: {level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error", transports: Array<Class0>}}}) => {addItem: (listId: string, itemId: string, params?: {url?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, addItemByTip: (listId: string, tipId: string, params?: {url?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, addItemByVenue: (listId: string, venueId: string, params?: {url?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, create: (name: string, params?: {collaborative?: boolean, description?: string, photoId?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, getByID: (listId: string, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getByName: (userNameOrId: string, listName: string, accessToken: string, callback: (error: ?Object, results: any) => void) => void, shareList: (listId: string, broadcast: "facebook" | "twitter" | "facebook,twitter", params?: {message?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void};

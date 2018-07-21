@@ -1,0 +1,6 @@
+// @flow
+
+export type LatLngParameter = {lat: string, long: string};
+export type LocationAPIParameters = {location: {alt?: number, altAcc?: number, ll: string, llAcc?: number}};
+export type LocationParameter = {lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number};
+declare export default {createLocationAPIParameters: (location: ?{lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number}) => ?{location: {alt?: number, altAcc?: number, ll: string, llAcc?: number}}, getLocationAPIParameter: (params?: ?{location?: {lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number}}, method: string, module: string, logger: any, callback: Function) => ?{location: {alt?: number, altAcc?: number, ll: string, llAcc?: number}}, isLocationParameterValid: (location: ?{lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number}) => boolean};

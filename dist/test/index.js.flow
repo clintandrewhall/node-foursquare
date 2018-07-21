@@ -1,0 +1,7 @@
+// @flow
+
+import nodeFoursquare from "./../node-foursquare";
+import jest from "jest";
+import express from "express";
+
+declare module.exports: {};

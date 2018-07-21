@@ -13,6 +13,7 @@ import { empty } from './util/callbacks';
 import defaultConfig from './config-default';
 import LogHelper from './util/logHelper';
 import mergeDeep from './util/mergeDeep';
+
 /**
  * A module for retrieving information about Checkins from Foursquare.
  * @module node-foursquare/Checkins
@@ -74,7 +75,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     checkinId: string,
     params: ?{
       text?: string,
-      url?: URL,
+      url?: string,
       contentId?: string,
     } = {},
     accessToken: string,

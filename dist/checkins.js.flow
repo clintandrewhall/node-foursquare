@@ -1,0 +1,16 @@
+// @flow
+
+import mergeDeep from "./util/mergeDeep";
+import LogHelper from "./util/logHelper";
+import defaultConfig from "./config-default";
+import {empty} from "./util/callbacks";
+import type {LocationParameter} from "./util/locations";
+import type {CallbackFunction} from "./util/callbacks";
+import type {FoursquareConfig} from "./config-default";
+import locations from "./util/locations";
+import coreModule from "./core";
+import path from "path";
+declare class Class0 {
+
+}
+declare export default (providedConfig?: Object | {foursquare: {accessTokenUrl: string, apiUrl: string, authenticateUrl: string, mode?: "swarm" | "foursquare", version?: string, warnings: "WARN" | "ERROR"}, locale: string, secrets: {clientId: string, clientSecret: string, redirectUrl: string}, winston: {[_: "all" | "checkins" | "core" | "events" | "lists" | "photos" | "tips" | "users" | "venues"]: {level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error", transports: Array<Class0>}}}) => {add: (venueId: string, params?: ?{broadcast?: Array<"private" | "public" | "facebook" | "twitter" | "followers">, eventId?: string, location?: {lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number}, mentions?: Array<string>, shout?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, addPost: (checkinId: string, params?: ?{contentId?: string, text?: string, url?: string}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, getDetails: (checkinId: string, params?: ?{}, accessToken: ?string, callback: (error: ?Object, results: any) => void) => void, like: (checkinId: string, params?: ?{}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void, resolve: (shortId: string, params?: ?{}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, unlike: (checkinId: string, params?: ?{}, accessToken: string, callback?: (error: ?Object, results: any) => void) => void};

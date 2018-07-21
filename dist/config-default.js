@@ -1,6 +1,10 @@
 'use strict';
 
-var winston = require('winston');
+var _winston = require('winston');
+
+var _winston2 = _interopRequireDefault(_winston);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var defaultConfig = {
   foursquare: {
@@ -21,7 +25,7 @@ var defaultConfig = {
   winston: {
     all: {
       level: 'warn',
-      transports: [new winston.transports.Console()]
+      transports: [new _winston2.default.transports.Console()]
     }
   }
 };

@@ -1,0 +1,21 @@
+// @flow
+
+declare class Class0 {
+  static captureStackTrace(target: Object, constructor?: Function): void;
+  static prepareStackTrace: (err: Class0, stack: Array<CallSite>) => mixed;
+  static stackTraceLimit: number;
+
+  columnNumber?: number;
+  description?: string;
+  fileName?: string;
+  lineNumber?: number;
+  message: string;
+  name: string;
+  number?: number;
+  stack: string;
+  constructor(message?: mixed): void;
+  toString(): string;
+}
+export type CallbackFunction = (error: ?Object, results: any) => void;
+export type ServerCallbackFunction = (error: ?Class0, statusCode: number, results?: any) => void;
+declare export function empty(): void;

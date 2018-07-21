@@ -1,10 +1,16 @@
-/* @flow */
+/* @ flow */
 
 import type {
   CallbackFunction,
   ServerCallbackFunction,
 } from './util/callbacks';
+
 import type { FoursquareConfig, WinstonLoggerName } from './config-default';
+import type {
+  $winstonLevels,
+  $winstonLogger,
+  $winstonLoggerConfig,
+} from 'winston';
 
 import qs from 'querystring';
 import util from 'util';
@@ -16,6 +22,10 @@ import request from 'request';
 import { empty } from './util/callbacks';
 import defaultConfig from './config-default';
 import mergeDeep from './util/mergeDeep';
+
+type Key = number | string;
+type Value = any;
+type Params = { [key: Key]: Value };
 
 const { format } = winstonLib;
 const { combine, colorize, timestamp, label, printf } = format;
@@ -30,7 +40,6 @@ const levels: $winstonLevels = {
   error: 0,
 };
 
-// $FlowFixMe$ Winston library definition incorrect
 winstonLib.addColors({
   debug: 'blue',
   detail: 'grey',
@@ -42,7 +51,6 @@ winstonLib.addColors({
 });
 
 const loggerFormat = printf(info => {
-  // $FlowFixMe$ Winston library definition incorrect
   return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
 });
 
@@ -50,16 +58,20 @@ const loggerFormat = printf(info => {
  * Construct the Core module.
  */
 export default function(providedConfig: Object | FoursquareConfig = {}) {
-  const config = mergeDeep(defaultConfig, providedConfig || {});
+  const config = (mergeDeep(
+    defaultConfig,
+    providedConfig || {}
+  ): FoursquareConfig);
   const { secrets, winston } = config;
   const { clientId, clientSecret } = secrets;
 
-  const getLogger = (name: WinstonLoggerName): any => {
+  const getLogger = (
+    name: WinstonLoggerName
+  ): $winstonLogger<$winstonLevels> => {
     // In order to avoid emitter leak warnings, and not affect the global
     // setting or outer warnings, I'm setting the defaultMaxListeners before
     // and after creating a new logger.
 
-    // $FlowFixMe$ Winston flow-type definition is missing 'has()'
     if (!winstonLib.loggers.has(name)) {
       // $FlowFixMe$ Flow isn't up-to-date on defaultMaxListeners
       const maxListeners = EventEmitter.defaultMaxListeners;
@@ -89,7 +101,6 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
 
     return {
       format: combine(
-        // $FlowFixMe$ Winston library incorrect
         colorize({ message: true }),
         label({ label: name }),
         timestamp(),
@@ -226,7 +237,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   function callApi(
     path: string,
     accessToken: ?string,
-    params: ?Object = {},
+    params: ?Params = {},
     callback: CallbackFunction = empty,
     method: 'GET' | 'POST' = 'GET'
   ): void {
@@ -271,7 +282,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   function postApi(
     path: string,
     accessToken: ?string,
-    params: ?{} = {},
+    params: ?Params = {},
     callback: CallbackFunction
   ) {
     callApi(path, accessToken, params, callback, 'POST');

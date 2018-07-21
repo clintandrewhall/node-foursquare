@@ -1,0 +1,5 @@
+// @flow
+
+import merge from "deepmerge";
+import isPlainObject from "is-plain-object";
+declare export default (target: Object, source: Object) => Object;

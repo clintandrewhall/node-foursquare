@@ -177,7 +177,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     const { categoryIds, query, radius, ...otherParams } = params;
 
     if (radius && !(categoryIds || query)) {
-      this.logger.error(`Venues: when using radius, either categoryIds or query
+      logger.error(`Venues: when using radius, either categoryIds or query
         is required.`);
       callback(
         new Error(`Venues.${method}: when using radius, either categoryIds or

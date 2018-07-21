@@ -17,6 +17,7 @@ exports.default = function () {
 
 
   var getLogger = function getLogger(name) {
+
     if (!_winston2.default.loggers.has(name)) {
       var maxListeners = _events2.default.defaultMaxListeners;
 
