@@ -71,15 +71,6 @@ export default (providedConfig: Object | FoursquareConfig = {}) => {
     );
   }
 
-  if (!config.foursquare.mode) {
-    config.foursquare.mode = 'foursquare';
-    logger.warn(
-      `Foursquare API mode not defined in configuration; defaulting to: ${
-        config.foursquare.mode
-      }`
-    );
-  }
-
   const { foursquare, secrets } = config;
   const { clientId, clientSecret, redirectUrl } = secrets;
   const { accessTokenUrl, authenticateUrl } = foursquare;

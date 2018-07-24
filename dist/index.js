@@ -155,11 +155,6 @@ exports.default = function () {
       latest: ${config.foursquare.version}`);
   }
 
-  if (!config.foursquare.mode) {
-    config.foursquare.mode = 'foursquare';
-    logger.warn(`Foursquare API mode not defined in configuration; defaulting to: ${config.foursquare.mode}`);
-  }
-
   var foursquare = config.foursquare,
       secrets = config.secrets;
   var clientId = secrets.clientId,

@@ -1,0 +1,1431 @@
+// @flow
+
+import venues from "./venues";
+import users from "./users";
+import tips from "./tips";
+import photos from "./photos";
+import lists from "./lists";
+import checkins from "./checkins";
+import mergeDeep from "./util/mergeDeep";
+import defaultConfig from "./config-default";
+import coreLib from "./core";
+import { empty } from "./util/callbacks";
+import fetch from "node-fetch";
+import qs from "querystring";
+import type { CallbackFunction } from "./util/callbacks";
+import type { FoursquareConfig } from "./config-default";
+declare class Class0 {}
+declare export var Foursquare: {
+  Checkins: (
+    providedConfig?: | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
+        }
+      }
+  ) => {
+    add: (
+      venueId: string,
+      params?: ?{
+        broadcast?: Array<
+          "private" | "public" | "facebook" | "twitter" | "followers"
+        >,
+        eventId?: string,
+        location?: { lat: string, long: string } & {
+          accuracy?: number,
+          altitude?: number,
+          altitudeAccuracy?: number
+        },
+        mentions?: Array<string>,
+        shout?: string
+      },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    addPost: (
+      checkinId: string,
+      params?: ?{ contentId?: string, text?: string, url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    getDetails: (
+      checkinId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    like: (
+      checkinId: string,
+      params?: ?{},
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    resolve: (
+      shortId: string,
+      params?: ?{},
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    unlike: (
+      checkinId: string,
+      params?: ?{},
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Lists: (
+    providedConfig?: | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
+        }
+      }
+  ) => {
+    addItem: (
+      listId: string,
+      itemId: string,
+      params?: { url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    addItemByTip: (
+      listId: string,
+      tipId: string,
+      params?: { url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    addItemByVenue: (
+      listId: string,
+      venueId: string,
+      params?: { url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    create: (
+      name: string,
+      params?: {
+        collaborative?: boolean,
+        description?: string,
+        photoId?: string
+      },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    getByID: (
+      listId: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getByName: (
+      userNameOrId: string,
+      listName: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    shareList: (
+      listId: string,
+      broadcast: "facebook" | "twitter" | "facebook,twitter",
+      params?: { message?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Photos: (
+    providedConfig?: | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
+        }
+      }
+  ) => {
+    get: (
+      photoId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Tips: (
+    providedConfig?: | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
+        }
+      }
+  ) => {
+    add: (
+      venueId: string,
+      text: string,
+      params?: ?{
+        broadcast?: "facebook" | "twitter" | "facebook,twitter",
+        url?: string
+      },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    getDetails: (
+      tipId: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Users: (
+    providedConfig?: | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
+        }
+      }
+  ) => {
+    getDetails: (
+      userId: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getFriends: (
+      userId: string,
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLists: (
+      userId: string,
+      params?: ?{
+        group?: "created" | "edited | followed | friends | suggested",
+        limit?: number,
+        location?: { lat: string, long: string } & {
+          accuracy?: number,
+          altitude?: number,
+          altitudeAccuracy?: number
+        },
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getPhotos: (
+      userId: string,
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfCheckins: (
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        limit?: number,
+        offset?: number,
+        sort?: "newestfirst" | "oldestfirst"
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getSelfDetails: (
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfFriends: (
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfLists: (
+      params?: ?{
+        group?: "created" | "edited | followed | friends | suggested",
+        limit?: number,
+        location?: { lat: string, long: string } & {
+          accuracy?: number,
+          altitude?: number,
+          altitudeAccuracy?: number
+        },
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfPhotos: (
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfTastes: (
+      params?: ?{},
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfVenueHistory: (
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        categoryId?: string
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getSelfVenueLikes: (
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        categoryId?: string,
+        limit?: number,
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getTastes: (
+      userId: string,
+      params?: ?{},
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getVenueLikes: (
+      userId: string,
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        categoryId?: string,
+        limit?: number,
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    search: (
+      params?: ?{
+        email?: string,
+        fbid?: string,
+        name?: string,
+        onlyPages?: boolean,
+        phone?: string,
+        twitter?: string,
+        twitterSource?: string
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void
+  },
+  Venues: (
+    providedConfig?: | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
+        }
+      }
+  ) => {
+    browseBox: (
+      northEast: { lat: string, long: string },
+      southWest: { lat: string, long: string },
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    browseCircle: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      radius: number,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    exploreLocation: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      radius: number,
+      params?: ?{
+        day?: "any",
+        friendVisits?: "visited" | "notVisited",
+        lastVenue?: string,
+        limit?: number,
+        novelty?: "new" | "old",
+        offset?: number,
+        openNow?: boolean,
+        price?: Array<"1" | "2" | "3" | "4">,
+        query?: string,
+        radius?: number,
+        saved?: boolean,
+        section?:
+          | "arts"
+          | "coffee"
+          | "drinks"
+          | "food"
+          | "nextVenues"
+          | "outdoors"
+          | "shops"
+          | "sights"
+          | "topPicks"
+          | "trending",
+        sortByDistance?: boolean,
+        time?: "any"
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    exploreNear: (
+      place: string,
+      params?: ?{
+        day?: "any",
+        friendVisits?: "visited" | "notVisited",
+        lastVenue?: string,
+        limit?: number,
+        novelty?: "new" | "old",
+        offset?: number,
+        openNow?: boolean,
+        price?: Array<"1" | "2" | "3" | "4">,
+        query?: string,
+        radius?: number,
+        saved?: boolean,
+        section?:
+          | "arts"
+          | "coffee"
+          | "drinks"
+          | "food"
+          | "nextVenues"
+          | "outdoors"
+          | "shops"
+          | "sights"
+          | "topPicks"
+          | "trending",
+        sortByDistance?: boolean,
+        time?: "any"
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getBoxedSuggestCompletion: (
+      northEast: { lat: string, long: string },
+      southWest: { lat: string, long: string },
+      query: string,
+      params?: ?{ limit?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getCategories: (
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getEvents: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getHours: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLikes: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLinks: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getListed: (
+      venueId: string,
+      params?: ?{
+        group?: "created" | "edited" | "followed" | "friends" | "other",
+        limit?: number,
+        offset?: number
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLocationSuggestCompletion: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      query: string,
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLocationTrending: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getManagedVenues: (
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getMenu: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getNearSuggestCompletion: (
+      place: string,
+      query: string,
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getNearTrending: (
+      place: string,
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getNextVenues: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getPhotos: (
+      venueId: string,
+      params?: ?{
+        group?: "checkin" | "venue",
+        limit?: number,
+        offset?: number
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSimilar: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getStats: (
+      venueId: string,
+      params?: ?{ endAt?: number, startAt?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getTimeSeriesStats: (
+      venueIds: Array<string>,
+      startAt: number,
+      params?: ?{
+        endAt?: number,
+        fields?: Array<
+          | "totalCheckins"
+          | "newCheckins"
+          | "uniqueVisitors"
+          | "sharing"
+          | "genders"
+          | "ages"
+          | "hours"
+        >
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getTips: (
+      venueId: string,
+      params?: ?{
+        limit?: number,
+        offset?: number,
+        sort?: "friends" | "recent" | "popular"
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    globalSearch: (
+      query: string,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    like: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    match: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      query: string,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    searchLocation: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> } & {
+        query?: string,
+        radius?: number
+      } & any,
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    searchNear: (
+      place: string,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> } & { query?: string, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    unlike: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void
+  }
+};
+declare export default (
+  providedConfig?: | Object
+  | {
+      foursquare: {
+        accessTokenUrl: string,
+        apiUrl: string,
+        authenticateUrl: string,
+        version?: string,
+        warnings: "WARN" | "ERROR"
+      },
+      locale: string,
+      secrets: { clientId: string, clientSecret: string, redirectUrl: string },
+      winston: {
+        [_:
+          | "all"
+          | "checkins"
+          | "core"
+          | "events"
+          | "lists"
+          | "photos"
+          | "tips"
+          | "users"
+          | "venues"]: {
+          level:
+            | "detail"
+            | "trace"
+            | "debug"
+            | "enter"
+            | "info"
+            | "warn"
+            | "error",
+          transports: Array<Class0>
+        }
+      }
+    }
+) => {
+  Checkins: {
+    add: (
+      venueId: string,
+      params?: ?{
+        broadcast?: Array<
+          "private" | "public" | "facebook" | "twitter" | "followers"
+        >,
+        eventId?: string,
+        location?: { lat: string, long: string } & {
+          accuracy?: number,
+          altitude?: number,
+          altitudeAccuracy?: number
+        },
+        mentions?: Array<string>,
+        shout?: string
+      },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    addPost: (
+      checkinId: string,
+      params?: ?{ contentId?: string, text?: string, url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    getDetails: (
+      checkinId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    like: (
+      checkinId: string,
+      params?: ?{},
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    resolve: (
+      shortId: string,
+      params?: ?{},
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    unlike: (
+      checkinId: string,
+      params?: ?{},
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Lists: {
+    addItem: (
+      listId: string,
+      itemId: string,
+      params?: { url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    addItemByTip: (
+      listId: string,
+      tipId: string,
+      params?: { url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    addItemByVenue: (
+      listId: string,
+      venueId: string,
+      params?: { url?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    create: (
+      name: string,
+      params?: {
+        collaborative?: boolean,
+        description?: string,
+        photoId?: string
+      },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    getByID: (
+      listId: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getByName: (
+      userNameOrId: string,
+      listName: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    shareList: (
+      listId: string,
+      broadcast: "facebook" | "twitter" | "facebook,twitter",
+      params?: { message?: string },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Photos: {
+    get: (
+      photoId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Tips: {
+    add: (
+      venueId: string,
+      text: string,
+      params?: ?{
+        broadcast?: "facebook" | "twitter" | "facebook,twitter",
+        url?: string
+      },
+      accessToken: string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    getDetails: (
+      tipId: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  Users: {
+    getDetails: (
+      userId: string,
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getFriends: (
+      userId: string,
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLists: (
+      userId: string,
+      params?: ?{
+        group?: "created" | "edited | followed | friends | suggested",
+        limit?: number,
+        location?: { lat: string, long: string } & {
+          accuracy?: number,
+          altitude?: number,
+          altitudeAccuracy?: number
+        },
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getPhotos: (
+      userId: string,
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfCheckins: (
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        limit?: number,
+        offset?: number,
+        sort?: "newestfirst" | "oldestfirst"
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getSelfDetails: (
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfFriends: (
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfLists: (
+      params?: ?{
+        group?: "created" | "edited | followed | friends | suggested",
+        limit?: number,
+        location?: { lat: string, long: string } & {
+          accuracy?: number,
+          altitude?: number,
+          altitudeAccuracy?: number
+        },
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfPhotos: (
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfTastes: (
+      params?: ?{},
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSelfVenueHistory: (
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        categoryId?: string
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getSelfVenueLikes: (
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        categoryId?: string,
+        limit?: number,
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getTastes: (
+      userId: string,
+      params?: ?{},
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getVenueLikes: (
+      userId: string,
+      params?: ?{
+        afterTimestamp?: number,
+        beforeTimestamp?: number,
+        categoryId?: string,
+        limit?: number,
+        offset?: number
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    search: (
+      params?: ?{
+        email?: string,
+        fbid?: string,
+        name?: string,
+        onlyPages?: boolean,
+        phone?: string,
+        twitter?: string,
+        twitterSource?: string
+      },
+      accessToken: string,
+      callback: (error: ?Object, results: any) => void
+    ) => void
+  },
+  Venues: {
+    browseBox: (
+      northEast: { lat: string, long: string },
+      southWest: { lat: string, long: string },
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    browseCircle: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      radius: number,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    exploreLocation: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      radius: number,
+      params?: ?{
+        day?: "any",
+        friendVisits?: "visited" | "notVisited",
+        lastVenue?: string,
+        limit?: number,
+        novelty?: "new" | "old",
+        offset?: number,
+        openNow?: boolean,
+        price?: Array<"1" | "2" | "3" | "4">,
+        query?: string,
+        radius?: number,
+        saved?: boolean,
+        section?:
+          | "arts"
+          | "coffee"
+          | "drinks"
+          | "food"
+          | "nextVenues"
+          | "outdoors"
+          | "shops"
+          | "sights"
+          | "topPicks"
+          | "trending",
+        sortByDistance?: boolean,
+        time?: "any"
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    exploreNear: (
+      place: string,
+      params?: ?{
+        day?: "any",
+        friendVisits?: "visited" | "notVisited",
+        lastVenue?: string,
+        limit?: number,
+        novelty?: "new" | "old",
+        offset?: number,
+        openNow?: boolean,
+        price?: Array<"1" | "2" | "3" | "4">,
+        query?: string,
+        radius?: number,
+        saved?: boolean,
+        section?:
+          | "arts"
+          | "coffee"
+          | "drinks"
+          | "food"
+          | "nextVenues"
+          | "outdoors"
+          | "shops"
+          | "sights"
+          | "topPicks"
+          | "trending",
+        sortByDistance?: boolean,
+        time?: "any"
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getBoxedSuggestCompletion: (
+      northEast: { lat: string, long: string },
+      southWest: { lat: string, long: string },
+      query: string,
+      params?: ?{ limit?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getCategories: (
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getEvents: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getHours: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLikes: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLinks: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getListed: (
+      venueId: string,
+      params?: ?{
+        group?: "created" | "edited" | "followed" | "friends" | "other",
+        limit?: number,
+        offset?: number
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLocationSuggestCompletion: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      query: string,
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getLocationTrending: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getManagedVenues: (
+      params?: ?{ limit?: number, offset?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    getMenu: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getNearSuggestCompletion: (
+      place: string,
+      query: string,
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getNearTrending: (
+      place: string,
+      params?: ?{ limit?: number, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getNextVenues: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getPhotos: (
+      venueId: string,
+      params?: ?{
+        group?: "checkin" | "venue",
+        limit?: number,
+        offset?: number
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getSimilar: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getStats: (
+      venueId: string,
+      params?: ?{ endAt?: number, startAt?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getTimeSeriesStats: (
+      venueIds: Array<string>,
+      startAt: number,
+      params?: ?{
+        endAt?: number,
+        fields?: Array<
+          | "totalCheckins"
+          | "newCheckins"
+          | "uniqueVisitors"
+          | "sharing"
+          | "genders"
+          | "ages"
+          | "hours"
+        >
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    getTips: (
+      venueId: string,
+      params?: ?{
+        limit?: number,
+        offset?: number,
+        sort?: "friends" | "recent" | "popular"
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    globalSearch: (
+      query: string,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    like: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void,
+    match: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      query: string,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    searchLocation: (
+      location: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> } & {
+        query?: string,
+        radius?: number
+      } & any,
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
+    searchNear: (
+      place: string,
+      params?: ?{
+        limit?: number,
+        linkedId?: string,
+        providerId?: string,
+        url?: string
+      } & { categoryIds?: Array<string> } & { query?: string, radius?: number },
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void,
+    unlike: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback?: (error: ?Object, results: any) => void
+    ) => void | void
+  },
+  getAccessToken: (
+    providedParams: { code: string, grant_type?: ?string },
+    callback?: (error: ?Object, results: any) => void
+  ) => Promise<void>,
+  getAuthClientRedirectUrl: () => string
+};

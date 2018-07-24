@@ -115,20 +115,6 @@ To enable a different version of the API, add the following to configuration:
       ...
     }
 
-The Foursquare API now supports a 'mode' parameter, either 'foursquare' or
-'swarm'. This parameter is now required. By default, this library will assume
-'foursquare'. You can change this through configuration:
-
-    const config = {
-      ...
-      foursquare : {
-        ...
-        mode : 'swarm',
-        ...
-      }
-      ...
-    }
-
 When using an older API, Foursquare will provide deprecation warnings, (if
 applicable). By default, this library will write these warnings to the log,
 which will only be visible if logging for 'node-foursquare' is turned on, (see
@@ -242,6 +228,9 @@ The tests run using environment variables:
 * v0.3.2 - Latest updates and pull requests
 * v0.3.3 - Latest updates and pull requests
 * v0.4.0 - Refactor, modernization and update to latest API.
+* v0.4.1 - Fixes to semver
+* v0.4.2 - Fixes to Flow and access token URL
+* v0.4.3 - Distribution of Flow libdefs, removal of 'mode' parameter.
 
 ## Notes
 

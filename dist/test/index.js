@@ -8,9 +8,9 @@ var _jest = require('jest');
 
 var _jest2 = _interopRequireDefault(_jest);
 
-var _nodeFoursquare = require('./../node-foursquare');
+var _ = require('./../');
 
-var _nodeFoursquare2 = _interopRequireDefault(_nodeFoursquare);
+var _2 = _interopRequireDefault(_);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -21,7 +21,6 @@ require('dotenv').config();
 
 var config = {
   foursquare: {
-    mode: 'foursquare',
     version: process.env.VERSION
   },
   secrets: {
@@ -31,7 +30,7 @@ var config = {
   }
 };
 
-var Foursquare = (0, _nodeFoursquare2.default)(config);
+var Foursquare = (0, _2.default)(config);
 
 var app = (0, _express2.default)();
 

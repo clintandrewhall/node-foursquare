@@ -1,10 +1,79 @@
 // @flow
 
-import {$winstonTransport} from "winston";
+import { $winstonTransport } from "winston";
 import winston from "winston";
-export type FoursquareConfig = {foursquare: {accessTokenUrl: string, apiUrl: string, authenticateUrl: string, mode?: "swarm" | "foursquare", version?: string, warnings: "WARN" | "ERROR"}, locale: string, secrets: {clientId: string, clientSecret: string, redirectUrl: string}, winston: {[_: "all" | "checkins" | "core" | "events" | "lists" | "photos" | "tips" | "users" | "venues"]: {level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error", transports: Array<$winstonTransport>}}};
-export type WinstonLoggerConfig = {level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error", transports: Array<$winstonTransport>};
-export type WinstonLoggerLevel = "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error";
-export type WinstonLoggerName = "all" | "checkins" | "core" | "events" | "lists" | "photos" | "tips" | "users" | "venues";
+export type FoursquareConfig = {
+  foursquare: {
+    accessTokenUrl: string,
+    apiUrl: string,
+    authenticateUrl: string,
+    version?: string,
+    warnings: "WARN" | "ERROR"
+  },
+  locale: string,
+  secrets: { clientId: string, clientSecret: string, redirectUrl: string },
+  winston: {
+    [_:
+      | "all"
+      | "checkins"
+      | "core"
+      | "events"
+      | "lists"
+      | "photos"
+      | "tips"
+      | "users"
+      | "venues"]: {
+      level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error",
+      transports: Array<$winstonTransport>
+    }
+  }
+};
+export type WinstonLoggerConfig = {
+  level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error",
+  transports: Array<$winstonTransport>
+};
+export type WinstonLoggerLevel =
+  | "detail"
+  | "trace"
+  | "debug"
+  | "enter"
+  | "info"
+  | "warn"
+  | "error";
+export type WinstonLoggerName =
+  | "all"
+  | "checkins"
+  | "core"
+  | "events"
+  | "lists"
+  | "photos"
+  | "tips"
+  | "users"
+  | "venues";
 
-declare module.exports: {foursquare: {accessTokenUrl: string, apiUrl: string, authenticateUrl: string, mode?: "swarm" | "foursquare", version?: string, warnings: "WARN" | "ERROR"}, locale: string, secrets: {clientId: string, clientSecret: string, redirectUrl: string}, winston: {[_: "all" | "checkins" | "core" | "events" | "lists" | "photos" | "tips" | "users" | "venues"]: {level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error", transports: Array<$winstonTransport>}}};
+declare module.exports: {
+  foursquare: {
+    accessTokenUrl: string,
+    apiUrl: string,
+    authenticateUrl: string,
+    version?: string,
+    warnings: "WARN" | "ERROR"
+  },
+  locale: string,
+  secrets: { clientId: string, clientSecret: string, redirectUrl: string },
+  winston: {
+    [_:
+      | "all"
+      | "checkins"
+      | "core"
+      | "events"
+      | "lists"
+      | "photos"
+      | "tips"
+      | "users"
+      | "venues"]: {
+      level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error",
+      transports: Array<$winstonTransport>
+    }
+  }
+};

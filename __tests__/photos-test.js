@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Foursquare } from './../src/node-foursquare';
+import { Foursquare } from './../src';
 
 const env = ((process.env: any): { [string]: string });
 const {

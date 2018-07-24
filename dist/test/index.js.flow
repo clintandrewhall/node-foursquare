@@ -1,6 +1,6 @@
 // @flow
 
-import nodeFoursquare from "./../node-foursquare";
+import nodeFoursquare from "./../";
 import jest from "jest";
 import express from "express";
 

@@ -34,7 +34,6 @@ export type FoursquareConfig = {
     accessTokenUrl: string,
     authenticateUrl: string,
     apiUrl: string,
-    mode?: 'swarm' | 'foursquare',
     version?: string,
     warnings: 'WARN' | 'ERROR',
   },

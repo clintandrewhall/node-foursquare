@@ -2,19 +2,9 @@
   "name": "node-foursquare",
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
   "version": "0.4.2",
-  "main": "index.js",
-  "keywords": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
-  "tags": [
-    "node-foursquare",
-    "foursquare",
-    "swarm",
-    "4sq"
-  ],
+  "main": "dist/index.js",
+  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -73,13 +63,16 @@
     "eslint": "eslint",
     "flow": "flow",
     "clean": "del-cli ./dist/**",
-    "build": "yarn run clean && yarn run build:babel && yarn run build:flow && yarn run fix-flow-issue-2830",
+    "build": "yarn run clean && yarn run build:babel && yarn run build:flow",
     "build:babel": "babel src/ -d dist/",
-    "build:flow": "flow gen-flow-files src --out-dir dist --untyped \".+src/core.js/.+\"",
-    "fix-flow-issue-2830": "replace-in-file \"/default function(\\(.*\\)):/ig\" \"default \\$1 =>\" ./dist/*.js.flow,./dist/util/*.js.flow --isRegex",
+    "build:flow":
+      "flow gen-flow-files src --out-dir dist  && yarn run fix-flow-issue-2830 && prettier dist/*.js.flow --write",
+    "fix-flow-issue-2830":
+      "replace-in-file \"/default function(\\(.*\\)):/ig\" \"default \\$1 =>\" ./dist/*.js.flow,./dist/util/*.js.flow --isRegex",
     "jest": "jest --runInBand",
     "pretest": "yarn run build",
     "test": "node dist/test",
-    "test-casper": "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
+    "test-casper":
+      "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
   }
 }

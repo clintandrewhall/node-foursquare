@@ -3,13 +3,12 @@ require('babel-polyfill');
 import express from 'express';
 import jest from 'jest';
 
-import nodeFoursquare from './../node-foursquare';
+import nodeFoursquare from './../';
 
 require('dotenv').config();
 
 const config = {
   foursquare: {
-    mode: 'foursquare',
     version: process.env.VERSION,
   },
   secrets: {

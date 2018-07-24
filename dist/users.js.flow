@@ -3,13 +3,174 @@
 import mergeDeep from "./util/mergeDeep";
 import defaultConfig from "./config-default";
 import LogHelper from "./util/logHelper";
-import type {LocationParameter} from "./util/locations";
-import type {CallbackFunction} from "./util/callbacks";
-import type {FoursquareConfig} from "./config-default";
+import type { LocationParameter } from "./util/locations";
+import type { CallbackFunction } from "./util/callbacks";
+import type { FoursquareConfig } from "./config-default";
 import locations from "./util/locations";
 import coreModule from "./core";
 import path from "path";
-declare class Class0 {
-
-}
-declare export default (providedConfig?: Object | {foursquare: {accessTokenUrl: string, apiUrl: string, authenticateUrl: string, mode?: "swarm" | "foursquare", version?: string, warnings: "WARN" | "ERROR"}, locale: string, secrets: {clientId: string, clientSecret: string, redirectUrl: string}, winston: {[_: "all" | "checkins" | "core" | "events" | "lists" | "photos" | "tips" | "users" | "venues"]: {level: "detail" | "trace" | "debug" | "enter" | "info" | "warn" | "error", transports: Array<Class0>}}}) => {getDetails: (userId: string, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getFriends: (userId: string, params?: ?{limit?: number, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getLists: (userId: string, params?: ?{group?: "created" | "edited | followed | friends | suggested", limit?: number, location?: {lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number}, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getPhotos: (userId: string, params?: ?{limit?: number, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfCheckins: (params?: ?{afterTimestamp?: number, beforeTimestamp?: number, limit?: number, offset?: number, sort?: "newestfirst" | "oldestfirst"}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfDetails: (accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfFriends: (params?: ?{limit?: number, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfLists: (params?: ?{group?: "created" | "edited | followed | friends | suggested", limit?: number, location?: {lat: string, long: string} & {accuracy?: number, altitude?: number, altitudeAccuracy?: number}, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfPhotos: (params?: ?{limit?: number, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfTastes: (params?: ?{}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfVenueHistory: (params?: ?{afterTimestamp?: number, beforeTimestamp?: number, categoryId?: string}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getSelfVenueLikes: (params?: ?{afterTimestamp?: number, beforeTimestamp?: number, categoryId?: string, limit?: number, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getTastes: (userId: string, params?: ?{}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, getVenueLikes: (userId: string, params?: ?{afterTimestamp?: number, beforeTimestamp?: number, categoryId?: string, limit?: number, offset?: number}, accessToken: string, callback: (error: ?Object, results: any) => void) => void, search: (params?: ?{email?: string, fbid?: string, name?: string, onlyPages?: boolean, phone?: string, twitter?: string, twitterSource?: string}, accessToken: string, callback: (error: ?Object, results: any) => void) => void};
+declare class Class0 {}
+declare export default (
+  providedConfig?: | Object
+  | {
+      foursquare: {
+        accessTokenUrl: string,
+        apiUrl: string,
+        authenticateUrl: string,
+        version?: string,
+        warnings: "WARN" | "ERROR"
+      },
+      locale: string,
+      secrets: { clientId: string, clientSecret: string, redirectUrl: string },
+      winston: {
+        [_:
+          | "all"
+          | "checkins"
+          | "core"
+          | "events"
+          | "lists"
+          | "photos"
+          | "tips"
+          | "users"
+          | "venues"]: {
+          level:
+            | "detail"
+            | "trace"
+            | "debug"
+            | "enter"
+            | "info"
+            | "warn"
+            | "error",
+          transports: Array<Class0>
+        }
+      }
+    }
+) => {
+  getDetails: (
+    userId: string,
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getFriends: (
+    userId: string,
+    params?: ?{ limit?: number, offset?: number },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getLists: (
+    userId: string,
+    params?: ?{
+      group?: "created" | "edited | followed | friends | suggested",
+      limit?: number,
+      location?: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      offset?: number
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getPhotos: (
+    userId: string,
+    params?: ?{ limit?: number, offset?: number },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfCheckins: (
+    params?: ?{
+      afterTimestamp?: number,
+      beforeTimestamp?: number,
+      limit?: number,
+      offset?: number,
+      sort?: "newestfirst" | "oldestfirst"
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfDetails: (
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfFriends: (
+    params?: ?{ limit?: number, offset?: number },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfLists: (
+    params?: ?{
+      group?: "created" | "edited | followed | friends | suggested",
+      limit?: number,
+      location?: { lat: string, long: string } & {
+        accuracy?: number,
+        altitude?: number,
+        altitudeAccuracy?: number
+      },
+      offset?: number
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfPhotos: (
+    params?: ?{ limit?: number, offset?: number },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfTastes: (
+    params?: ?{},
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfVenueHistory: (
+    params?: ?{
+      afterTimestamp?: number,
+      beforeTimestamp?: number,
+      categoryId?: string
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getSelfVenueLikes: (
+    params?: ?{
+      afterTimestamp?: number,
+      beforeTimestamp?: number,
+      categoryId?: string,
+      limit?: number,
+      offset?: number
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getTastes: (
+    userId: string,
+    params?: ?{},
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  getVenueLikes: (
+    userId: string,
+    params?: ?{
+      afterTimestamp?: number,
+      beforeTimestamp?: number,
+      categoryId?: string,
+      limit?: number,
+      offset?: number
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void,
+  search: (
+    params?: ?{
+      email?: string,
+      fbid?: string,
+      name?: string,
+      onlyPages?: boolean,
+      phone?: string,
+      twitter?: string,
+      twitterSource?: string
+    },
+    accessToken: string,
+    callback: (error: ?Object, results: any) => void
+  ) => void
+};
