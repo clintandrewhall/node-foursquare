@@ -75,7 +75,7 @@ OAuth configuration in Foursquare. Using Express, for example:
 
 If you already have the ability to glean an access token, (e.g. you have your
 own OAuth, or the key is stored in the database), you can instantiate the
-entire library, or just the module you want:
+entire library:
 
     import nodeFoursquare from 'node-foursquare';
     import config from './config';
@@ -83,17 +83,6 @@ entire library, or just the module you want:
     const Foursquare = nodeFoursquare(config);
     const foo = Foursquare.Venues.search(...);
     const bar = Foursquare.Tips.getByID(...);
-
-    // ...or
-
-    import { Foursquare } from './../src/node-foursquare';
-    import config from './config';
-
-    const Venues = Foursquare.Venues(config);
-    const foo = Venues.search(...);
-
-    const Tips = Foursquare.Tips(config);
-    const bar = Tips.getByID(...);
 
 ## Foursquare API Version and Deprecation Warnings
 
@@ -231,6 +220,7 @@ The tests run using environment variables:
 * v0.4.1 - Fixes to semver
 * v0.4.2 - Fixes to Flow and access token URL
 * v0.4.3 - Distribution of Flow libdefs, removal of 'mode' parameter.
+* v0.4.4 - Make module compatible with CommonJS environments; lose individual module imports.
 
 ## Notes
 

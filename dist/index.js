@@ -3,7 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Foursquare = undefined;
+
+var _babelPolyfill = require('babel-polyfill');
+
+var _babelPolyfill2 = _interopRequireDefault(_babelPolyfill);
 
 var _querystring = require('querystring');
 
@@ -56,15 +59,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 var version = '07102018';
-
-var Foursquare = exports.Foursquare = {
-  Checkins: _checkins2.default,
-  Lists: _lists2.default,
-  Photos: _photos2.default,
-  Tips: _tips2.default,
-  Users: _users2.default,
-  Venues: _venues2.default
-};
 
 exports.default = function () {
   var getAccessToken = function () {
@@ -178,3 +172,5 @@ exports.default = function () {
     getAuthClientRedirectUrl
   };
 };
+
+module.exports = exports['default'];

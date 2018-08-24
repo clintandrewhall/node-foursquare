@@ -3,7 +3,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Foursquare } from './../src';
+import Foursquare from './../src';
 
 const env = ((process.env: any): { [string]: string });
 const {
@@ -18,7 +18,7 @@ const {
   VERSION,
 } = env;
 
-const Lists = Foursquare.Lists({
+const { Lists } = Foursquare({
   foursquare: {
     mode: 'foursquare',
     version: VERSION,

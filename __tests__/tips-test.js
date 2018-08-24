@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Foursquare } from './../src';
+import Foursquare from './../src';
 
 const env = ((process.env: any): { [string]: string });
 const {
@@ -14,7 +14,7 @@ const {
   VERSION,
 } = env;
 
-const Tips = Foursquare.Tips({
+const { Tips } = Foursquare({
   foursquare: {
     mode: 'foursquare',
     version: VERSION,

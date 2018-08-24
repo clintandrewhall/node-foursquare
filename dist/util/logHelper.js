@@ -52,3 +52,4 @@ var LogHelper = function () {
 }();
 
 exports.default = LogHelper;
+module.exports = exports['default'];

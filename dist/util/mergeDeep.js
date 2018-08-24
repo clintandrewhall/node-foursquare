@@ -21,3 +21,4 @@ var mergeDeep = function mergeDeep(target, source) {
 };
 
 exports.default = mergeDeep;
+module.exports = exports['default'];
