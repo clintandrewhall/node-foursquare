@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { Foursquare } from './../src';
+import Foursquare from './../src';
 
 const env = ((process.env: any): { [string]: string });
 const {
@@ -21,7 +21,7 @@ const NE = { lat: '39.063281', long: '-94.566989' };
 const SW = { lat: '39.028485', long: '-94.607845' };
 const LOCATION = { lat: '39.052310', long: '-94.589761' };
 
-const Venues = Foursquare.Venues({
+const {Venues} = Foursquare({
   foursquare: {
     mode: 'foursquare',
     version: VERSION,

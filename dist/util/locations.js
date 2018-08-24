@@ -71,3 +71,4 @@ exports.default = {
     return createLocationAPIParameters(location);
   }
 };
+module.exports = exports["default"];

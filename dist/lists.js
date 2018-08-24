@@ -164,3 +164,5 @@ var _mergeDeep = require('./util/mergeDeep');
 var _mergeDeep2 = _interopRequireDefault(_mergeDeep);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+module.exports = exports['default'];

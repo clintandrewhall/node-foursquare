@@ -9,6 +9,8 @@
 import type { FoursquareConfig } from './config-default';
 import type { CallbackFunction } from './util/callbacks';
 
+import _ from 'babel-polyfill';
+
 import qs from 'querystring';
 import fetch from 'node-fetch';
 
@@ -25,15 +27,6 @@ import users from './users';
 import venues from './venues';
 
 const version = '07102018';
-
-export const Foursquare = {
-  Checkins: checkins,
-  Lists: lists,
-  Photos: photos,
-  Tips: tips,
-  Users: users,
-  Venues: venues,
-};
 
 export default (providedConfig: Object | FoursquareConfig = {}) => {
   const config = mergeDeep(defaultConfig, providedConfig || {});

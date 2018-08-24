@@ -286,3 +286,5 @@ _winston2.default.addColors({
 var loggerFormat = printf(function (info) {
   return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
 });
+
+module.exports = exports['default'];

@@ -1,10 +1,20 @@
 {
   "name": "node-foursquare",
   "description": "Fault-tolerant Foursquare/Swarm API v2 wrapper for Node JS.",
-  "version": "0.4.2",
+  "version": "0.4.4",
   "main": "dist/index.js",
-  "keywords": ["node-foursquare", "foursquare", "swarm", "4sq"],
-  "tags": ["node-foursquare", "foursquare", "swarm", "4sq"],
+  "keywords": [
+    "node-foursquare",
+    "foursquare",
+    "swarm",
+    "4sq"
+  ],
+  "tags": [
+    "node-foursquare",
+    "foursquare",
+    "swarm",
+    "4sq"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/clintandrewhall/node-foursquare.git"
@@ -25,6 +35,7 @@
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.5",
     "babel-jest": "^23.2.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
@@ -33,21 +44,21 @@
     "casperjs": "^1.1.4",
     "del-cli": "^1.1.0",
     "dotenv": "^6.0.0",
-    "eslint": "^4.19.1",
+    "eslint": "^5.4.0",
     "eslint-config-fbjs": "^2.0.1",
     "eslint-plugin-babel": "^5.1.0",
     "eslint-plugin-flowtype": "^2.46.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jest": "^21.5.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-prettier": "^2.3.1",
     "eslint-plugin-react": "^7.7.0",
-    "eslint-plugin-relay": "^0.0.24",
+    "eslint-plugin-relay": "^0.0.27",
     "express": "^4.16.2",
-    "flow-bin": "^0.76.0",
+    "flow-bin": "^0.79.1",
     "jest": "^23.0.0",
-    "jest-extended": "^0.7.2",
+    "jest-extended": "^0.8.1",
     "phantomjs-prebuilt": "^2.1.16",
     "prettier": "^1.9.2",
     "regenerator-runtime": "^0.12.0",
@@ -65,14 +76,11 @@
     "clean": "del-cli ./dist/**",
     "build": "yarn run clean && yarn run build:babel && yarn run build:flow",
     "build:babel": "babel src/ -d dist/",
-    "build:flow":
-      "flow gen-flow-files src --out-dir dist  && yarn run fix-flow-issue-2830 && prettier dist/*.js.flow --write",
-    "fix-flow-issue-2830":
-      "replace-in-file \"/default function(\\(.*\\)):/ig\" \"default \\$1 =>\" ./dist/*.js.flow,./dist/util/*.js.flow --isRegex",
+    "build:flow": "flow gen-flow-files src --out-dir dist  && yarn run fix-flow-issue-2830 && prettier dist/*.js.flow --write",
+    "fix-flow-issue-2830": "replace-in-file \"/default function(\\(.*\\)):/ig\" \"default \\$1 =>\" ./dist/*.js.flow,./dist/util/*.js.flow --isRegex",
     "jest": "jest --runInBand",
     "pretest": "yarn run build",
     "test": "node dist/test",
-    "test-casper":
-      "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
+    "test-casper": "node_modules/casperjs/bin/casperjs ./dist/test/casper/index.js"
   }
 }
