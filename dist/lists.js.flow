@@ -10,40 +10,45 @@ import coreLib from "./core";
 import path from "path";
 declare class Class0 {}
 declare export default (
-  providedConfig?: | Object
-  | {
-      foursquare: {
-        accessTokenUrl: string,
-        apiUrl: string,
-        authenticateUrl: string,
-        version?: string,
-        warnings: "WARN" | "ERROR"
-      },
-      locale: string,
-      secrets: { clientId: string, clientSecret: string, redirectUrl: string },
-      winston: {
-        [_:
-          | "all"
-          | "checkins"
-          | "core"
-          | "events"
-          | "lists"
-          | "photos"
-          | "tips"
-          | "users"
-          | "venues"]: {
-          level:
-            | "detail"
-            | "trace"
-            | "debug"
-            | "enter"
-            | "info"
-            | "warn"
-            | "error",
-          transports: Array<Class0>
+  providedConfig?:
+    | Object
+    | {
+        foursquare: {
+          accessTokenUrl: string,
+          apiUrl: string,
+          authenticateUrl: string,
+          version?: string,
+          warnings: "WARN" | "ERROR"
+        },
+        locale: string,
+        secrets: {
+          clientId: string,
+          clientSecret: string,
+          redirectUrl: string
+        },
+        winston: {
+          [_:
+            | "all"
+            | "checkins"
+            | "core"
+            | "events"
+            | "lists"
+            | "photos"
+            | "tips"
+            | "users"
+            | "venues"]: {
+            level:
+              | "detail"
+              | "trace"
+              | "debug"
+              | "enter"
+              | "info"
+              | "warn"
+              | "error",
+            transports: Array<Class0>
+          }
         }
       }
-    }
 ) => {
   addItem: (
     listId: string,
