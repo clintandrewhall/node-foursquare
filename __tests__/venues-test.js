@@ -109,6 +109,18 @@ test('Venues.getCategories', done => {
   Venues.getCategories(null, ACCESS_TOKEN, callback);
 });
 
+test('Venues.getDetails', done => {
+  const callback = (error, data) => {
+    expect(error).toBeNull();
+    expect(data).toBeDefined();
+    expect(data.venue).toBeDefined();
+    expect(data.venue.id).toEqual(TEST_VENUES_VENUE_ID);
+    done();
+  };
+
+  Venues.getDetails(TEST_VENUES_VENUE_ID, null, ACCESS_TOKEN, callback);
+});
+
 test('Venues.getEvents', done => {
   const callback = (error, data) => {
     expect(error).toBeNull();

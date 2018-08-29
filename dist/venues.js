@@ -286,6 +286,16 @@ exports.default = function () {
     return getSimpleEndpoint(venueId, method, 'photos', params, accessToken, callback);
   };
 
+  var getDetails = function getDetails(venueId) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var accessToken = arguments[2];
+    var callback = arguments[3];
+
+    var method = 'getDetails';
+    logger.enter(method);
+    return getSimpleEndpoint(venueId, method, '', params, accessToken, callback);
+  };
+
   var getTips = function getTips(venueId) {
     var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var accessToken = arguments[2];
@@ -564,6 +574,7 @@ exports.default = function () {
     exploreNear,
     getBoxedSuggestCompletion,
     getCategories,
+    getDetails,
     getEvents,
     getHours,
     getLikes,

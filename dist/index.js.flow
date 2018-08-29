@@ -421,6 +421,12 @@ declare export default (
       accessToken: ?string,
       callback: (error: ?Object, results: any) => void
     ) => void,
+    getDetails: (
+      venueId: string,
+      params?: ?{},
+      accessToken: ?string,
+      callback: (error: ?Object, results: any) => void
+    ) => void | void,
     getEvents: (
       venueId: string,
       params?: ?{},

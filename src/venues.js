@@ -445,6 +445,27 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
   };
 
   /**
+   * Retrieve Details for a Foursquare Venue.
+   */
+  const getDetails = (
+    venueId: string,
+    params: ?{} = {},
+    accessToken: ?string,
+    callback: CallbackFunction
+  ) => {
+    const method = 'getDetails';
+    logger.enter(method);
+    return getSimpleEndpoint(
+      venueId,
+      method,
+      '',
+      params,
+      accessToken,
+      callback
+    );
+  };
+
+  /**
    * Retrieve Tips for a Foursquare Venue.
    */
   const getTips = (
@@ -951,6 +972,7 @@ export default function(providedConfig: Object | FoursquareConfig = {}) {
     exploreNear,
     getBoxedSuggestCompletion,
     getCategories,
+    getDetails,
     getEvents,
     getHours,
     getLikes,
